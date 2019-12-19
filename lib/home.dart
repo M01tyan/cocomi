@@ -1,56 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:bezier_chart/bezier_chart.dart';
+
 import 'Emotion.dart';
-import 'dart:math';
 
-main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  // 感情リストをランダムで作成
-  final emotions = List<Emotion>.generate(25, (int index) {
-    final _random = new Random();
-    return Emotion(emotion: _random.nextInt(3), date: DateTime.now().subtract(new Duration(days: index*3)));
-  });
-
+class Home extends StatelessWidget {
+  Home({@required this.emotions}) : assert(emotions != null);
+  final List<Emotion> emotions;
   @override 
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'cocomi',
-      // テーマの設定
-      theme: ThemeData(
-        textTheme: TextTheme(
-          body1: TextStyle(
-            fontSize: 25.0, 
-            fontWeight: FontWeight.w700,
+    return Scaffold(
+      body: Column(
+        children: <Widget>[
+          // 上部のチャート
+          Expanded(
+            flex: 3,
+            child: EmotionChart(emotions: emotions),
           ),
-          body2: TextStyle(
-            fontSize: 55.0, 
-            fontWeight: FontWeight.bold, 
-            height: 1, 
-            color: Colors.grey[700]
+          // 下部のリスト
+          Expanded(
+            flex: 7,
+            child: EmotionCardList(emotions: emotions),
           ),
-        )
+        ],
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('cocomi'),
-          backgroundColor: Colors.amber[700],
+      floatingActionButton: Container(
+        height: 80.0,
+        width: 80.0,
+        child: FloatingActionButton(
+          onPressed: () {
+            showBottomSheet(
+              context: context,
+              backgroundColor: Colors.white70,
+              builder: (context) => Container(
+                height: 200.0,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Image(image: AssetImage('assets/sad.png'), height: 110.0),
+                    Image(image: AssetImage('assets/normal.png'), height: 110.0),
+                    Image(image: AssetImage('assets/happy.png'), height: 110.0)
+                  ],
+                ),
+              ),
+              elevation: 8.0
+            );
+          },
+          child: Image(image: AssetImage('assets/normal.png'), height: 80.0),
         ),
-        body: Column(
-          children: <Widget>[
-            // 上部のチャート
-            Expanded(
-              flex: 3,
-              child: EmotionChart(emotions: emotions),
-            ),
-            // 下部のリスト
-            Expanded(
-              flex: 7,
-              child: EmotionCardList(emotions: emotions),
-            ),
-          ],
-        )
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.amber[700],
+        shape: const CircularNotchedRectangle(),
+        child: Container(
+          height: 50.0,
+        ),
       ),
     );
   }
