@@ -8,13 +8,28 @@ main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   final emotions = List<Emotion>.generate(20, (int index) {
-    return Emotion(emotion: 2, date: DateTime.now().subtract(new Duration(days: index)));
+    final _random = new Random();
+    return Emotion(emotion: _random.nextInt(3)-1, date: DateTime.now().subtract(new Duration(days: index)));
   });
 
   @override 
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'cocomi',
+      theme: ThemeData(
+        textTheme: TextTheme(
+          body1: TextStyle(
+            fontSize: 25.0, 
+            fontWeight: FontWeight.w700,
+          ),
+          body2: TextStyle(
+            fontSize: 55.0, 
+            fontWeight: FontWeight.bold, 
+            height: 1, 
+            color: Colors.grey[700]
+          ),
+        )
+      ),
       home: Scaffold(
         appBar: AppBar(
           title: Text('cocomi'),
@@ -30,13 +45,7 @@ class MyApp extends StatelessWidget {
             ),
             Expanded(
               flex: 7,
-              child: ListView(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                children: <Widget>[
-                  for (int i=0; i<emotions.length; i++)
-                    EmotionCard(emotion: emotions[i]),
-                ],
-              ),
+              child: EmotionCard(emotions: emotions),
             ),
           ],
         )
@@ -80,29 +89,46 @@ class EmotionChart extends StatelessWidget {
 }
 
 class EmotionCard extends StatelessWidget {
-  EmotionCard({this.emotion});
-  final Emotion emotion;
+  EmotionCard({this.emotions});
+  final List<Emotion> emotions;
 
   @override 
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('yyyy年MM月dd日').format(emotion.date);
-    return Card(
-      child: SizedBox(
-        height: 80.0,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            children: <Widget>[
-              Text('$formattedDate', style: TextStyle(fontSize: 30.0)),
-              Expanded(child: SizedBox()),
-              Padding(
-                padding: EdgeInsets.only(right: 20.0),
-                child: Image(image: AssetImage('assets/happy.png'), height: 60.0),
-              )
-            ],
+    return GridView.count(
+      crossAxisCount: 2,
+      children: emotions.map((emotion) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(15.0, 4.0, 15.0, 4.0),
+          child: Card(
+            child: SizedBox(
+              height: 80.0,
+              child: Padding(
+                padding: EdgeInsets.only(top: 7.0, bottom: 12.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Column(
+                      children: <Widget>[
+                        Text(
+                          emotion.printWeek,
+                          style: Theme.of(context).textTheme.body1.copyWith(
+                            color: emotion.weekColor
+                          ),
+                        ),
+                        Text(
+                          emotion.printDate.toString(),
+                          style: Theme.of(context).textTheme.body2,
+                        ),
+                      ],
+                    ),
+                    Image(image: AssetImage(emotion.assetName), height: 80.0),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      }).toList(),
     );
   }
 }
