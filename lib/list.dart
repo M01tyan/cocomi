@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'emotion.dart';
+import 'home.dart';
 
 // 下部の感情カードリスト
 class EmotionCardList extends StatelessWidget {
-  EmotionCardList({this.emotions});
-  final List<Emotion> emotions;
-  var _context;
+  const EmotionCardList({Key key}) : super(key: key);
+
   @override 
   Widget build(BuildContext context) {
-    _context = context;
+    final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
     return GridView.count(
       crossAxisCount: 2,
       children: _createListEmotion(emotions),
@@ -26,7 +26,7 @@ class EmotionCardList extends StatelessWidget {
         list_print.add(
           Padding(
             padding: EdgeInsets.fromLTRB(15.0, 4.0, 15.0, 4.0),
-            child: _EmotionMonthCard(emotions[i]),
+            child: _EmotionMonthCard(emotion: emotions[i]),
           )
         );
         i--;
@@ -35,48 +35,22 @@ class EmotionCardList extends StatelessWidget {
         list_print.add(
           Padding(
             padding: EdgeInsets.fromLTRB(15.0, 4.0, 15.0, 4.0),
-            child: _EmotionDayCard(emotions[i]),
+            child: _EmotionDayCard(emotion: emotions[i]),
           )
         );
       }
     }
     return list_print;
   }
+}
 
-  // 感情カードウィジェット
-  Widget _EmotionDayCard(Emotion emotion) {
-    return Card(
-      child: SizedBox(
-        height: 80.0,
-        child: Padding(
-          padding: EdgeInsets.only(top: 7.0, bottom: 12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Text(
-                    emotion.printWeek,
-                    style: Theme.of(_context).textTheme.body1.copyWith(
-                      color: emotion.weekColor
-                    ),
-                  ),
-                  Text(
-                    emotion.printDate.toString(),
-                    style: Theme.of(_context).textTheme.body2,
-                  ),
-                ],
-              ),
-              Image(image: AssetImage(emotion.assetName), height: 80.0),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+//月のカードウィジェット
+class _EmotionMonthCard extends StatelessWidget {
+  const _EmotionMonthCard({Key key, @required this.emotion}) : super(key: key);
+  final Emotion emotion;
 
-  // 月カードウィジェット
-  Widget _EmotionMonthCard(Emotion emotion) {    
+  @override 
+  Widget build(BuildContext context) {
     return Card(
       child: SizedBox(
         height: 80.0,
@@ -86,18 +60,57 @@ class EmotionCardList extends StatelessWidget {
           children: <Widget>[
             Text(
               emotion.printEnglishMonth,
-              style: Theme.of(_context).textTheme.body1.copyWith(
+              style: Theme.of(context).textTheme.body1.copyWith(
                 color: Colors.grey[700],
               ),
             ),
             Text(
               emotion.printJapaneseMonth,
-              style: Theme.of(_context).textTheme.body2
+              style: Theme.of(context).textTheme.body2
             ),
           ],
         ),
       ),
       color: Colors.grey[400]
+    );
+  }
+}
+
+// 1日のカードウィジェット
+class _EmotionDayCard extends StatelessWidget {
+  const _EmotionDayCard({Key key, @required this.emotion}) : super(key: key);
+  final Emotion emotion;
+
+  Widget build(BuildContext context) {
+    return Card(
+      child: SizedBox(
+        height: 80.0,
+        child: Padding(
+          padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
+          child: Column(
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  Text(
+                    emotion.printWeek,
+                    style: Theme.of(context).textTheme.body1.copyWith(
+                      color: emotion.weekColor
+                    ),
+                  ),
+                  Text(
+                    emotion.printDate.toString(),
+                    style: Theme.of(context).textTheme.body2,
+                  ),
+                ],
+              ),
+              Expanded(
+                child: Image(image: AssetImage(emotion.assetName), fit: BoxFit.fitHeight),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
