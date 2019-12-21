@@ -7,16 +7,12 @@ import 'chart.dart';
 
 class ParentScaffold extends StatelessWidget {
   const ParentScaffold({Key key}) : super(key: key);
-  // final emotions = List<Emotion>.generate(25, (int index) {
-  //   final _random = new Random();
-  //   return Emotion(emotion: _random.nextInt(3), date: DateTime.now().subtract(new Duration(days: index)));
-  // });
 
   @override 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('cocomi'),
+        title: const Text('cocomi'),
         backgroundColor: Colors.amber[700],
         leading: null,
       ),
@@ -78,62 +74,9 @@ class _HomeState extends State<Home> {
               showBottomSheet(
                 context: context,
                 backgroundColor: Colors.transparent,
-                builder: (BuildContext builder) => Container(
-                  height: 200.0,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(25.0), topRight: Radius.circular(25.0)),
-                  ),
-                  child: Stack(
-                    children: <Widget>[
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: Container(
-                          width: 50.0, 
-                          height: 5.0,
-                          margin: EdgeInsets.only(top: 10.0),
-                          decoration: BoxDecoration(
-                            color: Colors.black26,
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  emotions.insert(0, new Emotion(emotion: 0, date: DateTime.now()));
-                                });
-                                Navigator.pop(context);
-                              },
-                              child: Image(image: AssetImage('assets/sad.png'), height: 110.0)
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  emotions.insert(0, new Emotion(emotion: 1, date: DateTime.now()));
-                                });
-                                Navigator.pop(context);
-                              },
-                              child: Image(image: AssetImage('assets/normal.png'), height: 110.0)
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  emotions.insert(0, new Emotion(emotion: 2, date: DateTime.now()));
-                                });
-                                Navigator.pop(context);
-                              },
-                              child: Image(image: AssetImage('assets/happy.png'), height: 110.0)
-                            ),
-                          ],
-                        ),
-                      ),
-                    ]
+                builder: (BuildContext builder) => StampBottomSheet(
+                  onPress: (Emotion emotion) => setState(
+                    () => emotions.insert(0, emotion)
                   ),
                 ),
                 elevation: 8.0
@@ -160,7 +103,9 @@ class Inherited extends InheritedWidget {
     Key key,
     @required this.emotions,
     @required Widget child,
-  }) : super(key: key, child: child);
+  }) : assert(emotions != null),
+       assert(child != null),
+       super(key: key, child: child);
 
   final List<Emotion> emotions;
 
@@ -175,4 +120,142 @@ class Inherited extends InheritedWidget {
 
   @override
   bool updateShouldNotify(Inherited old) => emotions != old.emotions;
+}
+
+class StampBottomSheet extends StatelessWidget {
+  const StampBottomSheet({
+    Key key,
+    @required this.onPress
+  }) : assert(onPress != null),
+       super(key: key);
+  final Function onPress;
+
+  @override 
+  Widget build(BuildContext context) {
+    return Container(
+      height: 200.0,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(25.0), topRight: Radius.circular(25.0)),
+      ),
+      child: Stack(
+        children: <Widget>[
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: 50.0, 
+              height: 5.0,
+              margin: EdgeInsets.only(top: 10.0),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: const [0, 1, 2].map((item) { 
+                final Emotion emotion = new Emotion(emotion: item, date: DateTime.now());
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => CustomDialog(emotion: emotion)
+                    );
+                    onPress(emotion);
+                  },
+                  child: Image(image: AssetImage(emotion.assetName), height: 110.0)
+                );
+              }).toList(),
+            ),
+          ),
+        ]
+      ),
+    );
+  }
+}
+
+class CustomDialog extends StatelessWidget {
+  const CustomDialog({
+    Key key,
+    @required this.emotion
+  }) : assert(emotion != null),
+       super(key: key);
+  final Emotion emotion;
+  
+  @override 
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
+      ),
+      elevation: 0.0,
+      backgroundColor: Colors.white,
+      child: Container(
+        height: MediaQuery.of(context).size.width * 0.6,
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              const Text(
+                'あなたの気持ちを記録しました！',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              Expanded(
+                child: AnimatedStamp(emotion: emotion),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AnimatedStamp extends StatefulWidget {
+  const AnimatedStamp({
+    Key key,
+    @required this.emotion,
+  }): assert(emotion != null),
+      super(key: key);
+  final Emotion emotion;
+
+  @override
+  _AnimatedStampState createState() => _AnimatedStampState();
+}
+
+class _AnimatedStampState extends State<AnimatedStamp> {
+  var _hasPadding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    new Future.delayed(const Duration(milliseconds: 100))
+      .then((value) => handleTimeout());
+  }
+
+  @override 
+  Widget build(BuildContext context) {
+    return AnimatedPadding(
+      padding: EdgeInsets.all(_hasPadding ? 0 : 100.0),
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeIn,
+      child: Image(
+        image: AssetImage(widget.emotion.assetName)
+      )
+    );
+  }
+
+  void handleTimeout() {
+    setState(() {
+      _hasPadding = !_hasPadding;
+    });
+  }
 }

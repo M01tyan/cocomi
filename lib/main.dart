@@ -27,11 +27,11 @@ class MyApp extends StatelessWidget {
       // テーマの設定
       theme: ThemeData(
         textTheme: TextTheme(
-          title: TextStyle(
+          title: const TextStyle(
             fontSize: 35.0,
             fontWeight: FontWeight.w800
           ),
-          body1: TextStyle(
+          body1: const TextStyle(
             fontSize: 25.0, 
             fontWeight: FontWeight.w700,
           ),
@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
             fontSize: 55.0, 
             fontWeight: FontWeight.bold, 
             height: 1, 
-            color: Colors.grey[700]
+            color: Colors.grey[700],
           ),
         )
       ),
