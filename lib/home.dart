@@ -238,14 +238,16 @@ class _AnimatedStampState extends State<AnimatedStamp> {
   void initState() {
     super.initState();
     new Future.delayed(const Duration(milliseconds: 100))
-      .then((value) => handleTimeout());
+      .then((value) => _handleTimeout());
+    new Future.delayed(const Duration(milliseconds: 2000))
+      .then((_) => _closeDialog());
   }
 
   @override 
   Widget build(BuildContext context) {
     return AnimatedPadding(
       padding: EdgeInsets.all(_hasPadding ? 0 : 100.0),
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
       curve: Curves.easeIn,
       child: Image(
         image: AssetImage(widget.emotion.assetName)
@@ -253,9 +255,13 @@ class _AnimatedStampState extends State<AnimatedStamp> {
     );
   }
 
-  void handleTimeout() {
+  void _handleTimeout() {
     setState(() {
       _hasPadding = !_hasPadding;
     });
+  }
+
+  void _closeDialog() {
+    Navigator.pop(context);
   }
 }
