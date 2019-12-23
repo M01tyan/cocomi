@@ -23,16 +23,7 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder>{
         '/': (context) => Splash(),
         '/home': (context) => ParentScaffold(),
-      },
-      // onGenerateRoute: (RouteSettings settings) {
-      //   var routes = <String, WidgetBuilder> {
-      //     "/": (context) => Splash(),
-      //     "/home": (context) => ParentScaffold(settings.arguments),
-      //   };
-      //   WidgetBuilder builder = routes[settings.name];
-      //   return MaterialPageRoute(builder: (context) => builder(context));
-      // },
-      // テーマの設定
+      },      // テーマの設定
       theme: ThemeData(
         textTheme: TextTheme(
           title: const TextStyle(

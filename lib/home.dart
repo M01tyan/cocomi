@@ -10,16 +10,32 @@ import 'chart.dart';
 class ParentScaffold extends StatelessWidget {
   const ParentScaffold({Key key}) : super(key: key);
 
+  Future<List<Emotion>> _getEmotions() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String store_emotions = prefs.getString('emotions') ?? "";
+    List<Emotion> emotions = (jsonDecode(store_emotions) as List).map((json) => Emotion.fromJson(json)).toList();
+    return emotions;
+  }
+
   @override 
   Widget build(BuildContext context) {
-    final emotions = ModalRoute.of(context).settings.arguments;
+    // final emotions = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       appBar: AppBar(
         title: const Text('cocomi'),
         backgroundColor: Colors.amber[700],
         leading: null,
       ),
-      body: Home(emotions: emotions),
+      body: FutureBuilder(
+        future: _getEmotions(),
+        builder: (BuildContext context, AsyncSnapshot<List<Emotion>> snapshot) {
+          if (snapshot.hasData) {
+            return Home(emotions: snapshot.data);
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        }
+      ),
     );
   }
 }
@@ -57,63 +73,52 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Inherited(
       emotions: emotions,
-      child: 
-      // FutureBuilder(
-        // future: _getPrefEmotions(),
-        // initialData: [],
-        // builder: (BuildContext context, future) {
-          // if(!future.hasData) {
-          //   return Center(child: CircularProgressIndicator());
-          // } else {
-          Scaffold(
-            body: GestureDetector(
-              onTap: () {
-                Navigator.popUntil(context, ModalRoute.withName('/home'));
-              },
-              child: Column(
-                children: <Widget>[
-                  // 上部のチャート
-                  Expanded(
-                    flex: 3,
-                    child: EmotionChart(),
-                  ),
-                  // 下部のリスト
-                  Expanded(
-                    flex: 7,
-                    child: EmotionCardList(),
-                  ),
-                ],
+      child: Scaffold(
+        body: GestureDetector(
+          onTap: () {
+            Navigator.popUntil(context, ModalRoute.withName('/home'));
+          },
+          child: Column(
+            children: <Widget>[
+              // 上部のチャート
+              Expanded(
+                flex: 3,
+                child: EmotionChart(),
               ),
-            ),
-            floatingActionButton: Container(
-              height: 80.0,
-              width: 80.0,
-              child: FloatingActionButton(
-                onPressed: () {
-                  showBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (BuildContext builder) => StampBottomSheet(
-                      onPress: (Emotion emotion) => _addEmotion(emotion),
-                    ),
-                    elevation: 8.0
-                  );
-                },
-                child: Image(image: AssetImage('assets/normal.png'), height: 80.0),
+              // 下部のリスト
+              Expanded(
+                flex: 7,
+                child: EmotionCardList(),
               ),
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-            bottomNavigationBar: BottomAppBar(
-              color: Colors.amber[700],
-              shape: const CircularNotchedRectangle(),
-              child: Container(
-                height: 50.0,
-              ),
-            ),
+            ],
           ),
-          // }
-        // }
-    //   ),
+        ),
+        floatingActionButton: Container(
+          height: 80.0,
+          width: 80.0,
+          child: FloatingActionButton(
+            onPressed: () {
+              showBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                builder: (BuildContext builder) => StampBottomSheet(
+                  onPress: (Emotion emotion) => _addEmotion(emotion),
+                ),
+                elevation: 8.0
+              );
+            },
+            child: Image(image: AssetImage('assets/normal.png'), height: 80.0),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.amber[700],
+          shape: const CircularNotchedRectangle(),
+          child: Container(
+            height: 50.0,
+          ),
+        ),
+      ),
     );
   }
 }
