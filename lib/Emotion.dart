@@ -37,4 +37,13 @@ class Emotion {
       default: return Colors.grey[700];
     }
   }
+
+  Emotion.fromJson(Map<String, dynamic> json)
+    : emotion = json['emotion'],
+      date = DateTime.parse(json['date']);
+
+  Map<String, dynamic> toJson() => {
+    'emotion': emotion,
+    'date': date.toIso8601String(),
+  };
 }
