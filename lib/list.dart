@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'emotion.dart';
 import 'home.dart';
 
@@ -82,10 +83,41 @@ class _EmotionDayCard extends StatelessWidget {
   final Emotion emotion;
 
   Widget build(BuildContext context) {
+    final deleteEmotion = Inherited.of(context, listen: false).deleteEmotion;
     return Card(
       child: SizedBox(
         height: 80.0,
-        child: Padding(
+        child: GestureDetector(
+          onLongPress: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return CupertinoAlertDialog(
+                  title: const Text('このカードを削除しますか？'),
+                  content: const Text('一度削除すると復元することはできません'),
+                  actions: <Widget>[
+                    CupertinoDialogAction(
+                      child: const Text(
+                        "CANCEL",
+                        style: const TextStyle(color: Colors.blue),
+                      ),
+                      isDestructiveAction: true,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    CupertinoDialogAction(
+                      child: const Text("OK"),
+                      isDestructiveAction: true,
+                      onPressed: () {
+                        deleteEmotion(emotion.date);
+                        Navigator.pop(context);
+                      }
+                    ),
+                  ]
+                );
+              }
+            );
+          },
+          child: Padding(
           padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
           child: Column(
             // mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -110,6 +142,7 @@ class _EmotionDayCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

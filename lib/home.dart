@@ -19,7 +19,6 @@ class ParentScaffold extends StatelessWidget {
 
   @override 
   Widget build(BuildContext context) {
-    // final emotions = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       appBar: AppBar(
         title: const Text('cocomi'),
@@ -59,9 +58,19 @@ class _HomeState extends State<Home> {
     super.initState();
   }
 
-  void _addEmotion(Emotion emotion) async {
+  void _addEmotion(int emotion) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    emotions.insert(0, emotion);
+    emotions.insert(0, new Emotion(emotion: emotion, date: DateTime.now()));
+    String jsonEmotions = jsonEncode(emotions);
+    await prefs.setString('emotions', jsonEmotions);
+    setState(() {
+      emotions = emotions;
+    });
+  }
+
+  void _deleteEmotion(DateTime removeDate) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    emotions.removeWhere((item) => item.date == removeDate);
     String jsonEmotions = jsonEncode(emotions);
     await prefs.setString('emotions', jsonEmotions);
     setState(() {
@@ -73,6 +82,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Inherited(
       emotions: emotions,
+      deleteEmotion: (DateTime date) => _deleteEmotion(date),
       child: Scaffold(
         body: GestureDetector(
           onTap: () {
@@ -101,8 +111,9 @@ class _HomeState extends State<Home> {
               showBottomSheet(
                 context: context,
                 backgroundColor: Colors.transparent,
-                builder: (BuildContext builder) => StampBottomSheet(
-                  onPress: (Emotion emotion) => _addEmotion(emotion),
+                builder: (BuildContext builder) => Inherited(
+                  addEmotion: (int emotion) => _addEmotion(emotion), 
+                  child: StampBottomSheet()
                 ),
                 elevation: 8.0
               );
@@ -126,13 +137,16 @@ class _HomeState extends State<Home> {
 class Inherited extends InheritedWidget {
   const Inherited({
     Key key,
-    @required this.emotions,
+    this.emotions,
+    this.addEmotion,
+    this.deleteEmotion,
     @required Widget child,
-  }) : assert(emotions != null),
-       assert(child != null),
+  }) : assert(child != null),
        super(key: key, child: child);
 
   final List<Emotion> emotions;
+  final Function addEmotion;
+  final Function deleteEmotion;
 
   static Inherited of(
     BuildContext context, {
@@ -144,19 +158,17 @@ class Inherited extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(Inherited old) => emotions != old.emotions;
+  bool updateShouldNotify(Inherited old) => emotions.length != old.emotions.length;
 }
 
 class StampBottomSheet extends StatelessWidget {
   const StampBottomSheet({
     Key key,
-    @required this.onPress
-  }) : assert(onPress != null),
-       super(key: key);
-  final Function onPress;
+  }) : super(key: key);
 
   @override 
   Widget build(BuildContext context) {
+    final state = Inherited.of(context, listen: false);
     return Container(
       height: 200.0,
       decoration: BoxDecoration(
@@ -190,7 +202,7 @@ class StampBottomSheet extends StatelessWidget {
                       context: context,
                       builder: (BuildContext context) => CustomDialog(emotion: emotion)
                     );
-                    onPress(emotion);
+                    state.addEmotion(item);
                   },
                   child: Image(image: AssetImage(emotion.assetName), height: 110.0)
                 );
