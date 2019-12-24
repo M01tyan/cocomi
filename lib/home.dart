@@ -10,16 +10,31 @@ import 'chart.dart';
 class ParentScaffold extends StatelessWidget {
   const ParentScaffold({Key key}) : super(key: key);
 
+  Future<List<Emotion>> _getEmotions() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String store_emotions = prefs.getString('emotions') ?? "";
+    List<Emotion> emotions = (jsonDecode(store_emotions) as List).map((json) => Emotion.fromJson(json)).toList();
+    return emotions;
+  }
+
   @override 
   Widget build(BuildContext context) {
-    final emotions = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       appBar: AppBar(
         title: const Text('cocomi'),
         backgroundColor: Colors.amber[700],
         leading: null,
       ),
-      body: Home(emotions: emotions),
+      body: FutureBuilder(
+        future: _getEmotions(),
+        builder: (BuildContext context, AsyncSnapshot<List<Emotion>> snapshot) {
+          if (snapshot.hasData) {
+            return Home(emotions: snapshot.data);
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        }
+      ),
     );
   }
 }
@@ -43,9 +58,19 @@ class _HomeState extends State<Home> {
     super.initState();
   }
 
-  void _addEmotion(Emotion emotion) async {
+  void _addEmotion(int emotion) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    emotions.insert(0, emotion);
+    emotions.insert(0, new Emotion(emotion: emotion, date: DateTime.now()));
+    String jsonEmotions = jsonEncode(emotions);
+    await prefs.setString('emotions', jsonEmotions);
+    setState(() {
+      emotions = emotions;
+    });
+  }
+
+  void _deleteEmotion(DateTime removeDate) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    emotions.removeWhere((item) => item.date == removeDate);
     String jsonEmotions = jsonEncode(emotions);
     await prefs.setString('emotions', jsonEmotions);
     setState(() {
@@ -57,63 +82,54 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Inherited(
       emotions: emotions,
-      child: 
-      // FutureBuilder(
-        // future: _getPrefEmotions(),
-        // initialData: [],
-        // builder: (BuildContext context, future) {
-          // if(!future.hasData) {
-          //   return Center(child: CircularProgressIndicator());
-          // } else {
-          Scaffold(
-            body: GestureDetector(
-              onTap: () {
-                Navigator.popUntil(context, ModalRoute.withName('/home'));
-              },
-              child: Column(
-                children: <Widget>[
-                  // 上部のチャート
-                  Expanded(
-                    flex: 3,
-                    child: EmotionChart(),
-                  ),
-                  // 下部のリスト
-                  Expanded(
-                    flex: 7,
-                    child: EmotionCardList(),
-                  ),
-                ],
+      deleteEmotion: (DateTime date) => _deleteEmotion(date),
+      child: Scaffold(
+        body: GestureDetector(
+          onTap: () {
+            Navigator.popUntil(context, ModalRoute.withName('/home'));
+          },
+          child: Column(
+            children: <Widget>[
+              // 上部のチャート
+              Expanded(
+                flex: 3,
+                child: EmotionChart(),
               ),
-            ),
-            floatingActionButton: Container(
-              height: 80.0,
-              width: 80.0,
-              child: FloatingActionButton(
-                onPressed: () {
-                  showBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (BuildContext builder) => StampBottomSheet(
-                      onPress: (Emotion emotion) => _addEmotion(emotion),
-                    ),
-                    elevation: 8.0
-                  );
-                },
-                child: Image(image: AssetImage('assets/normal.png'), height: 80.0),
+              // 下部のリスト
+              Expanded(
+                flex: 7,
+                child: EmotionCardList(),
               ),
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-            bottomNavigationBar: BottomAppBar(
-              color: Colors.amber[700],
-              shape: const CircularNotchedRectangle(),
-              child: Container(
-                height: 50.0,
-              ),
-            ),
+            ],
           ),
-          // }
-        // }
-    //   ),
+        ),
+        floatingActionButton: Container(
+          height: 80.0,
+          width: 80.0,
+          child: FloatingActionButton(
+            onPressed: () {
+              showBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                builder: (BuildContext builder) => Inherited(
+                  addEmotion: (int emotion) => _addEmotion(emotion), 
+                  child: StampBottomSheet()
+                ),
+                elevation: 8.0
+              );
+            },
+            child: Image(image: AssetImage('assets/normal.png'), height: 80.0),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.amber[700],
+          shape: const CircularNotchedRectangle(),
+          child: Container(
+            height: 50.0,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -121,13 +137,16 @@ class _HomeState extends State<Home> {
 class Inherited extends InheritedWidget {
   const Inherited({
     Key key,
-    @required this.emotions,
+    this.emotions,
+    this.addEmotion,
+    this.deleteEmotion,
     @required Widget child,
-  }) : assert(emotions != null),
-       assert(child != null),
+  }) : assert(child != null),
        super(key: key, child: child);
 
   final List<Emotion> emotions;
+  final Function addEmotion;
+  final Function deleteEmotion;
 
   static Inherited of(
     BuildContext context, {
@@ -139,19 +158,17 @@ class Inherited extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(Inherited old) => emotions != old.emotions;
+  bool updateShouldNotify(Inherited old) => emotions.length != old.emotions.length;
 }
 
 class StampBottomSheet extends StatelessWidget {
   const StampBottomSheet({
     Key key,
-    @required this.onPress
-  }) : assert(onPress != null),
-       super(key: key);
-  final Function onPress;
+  }) : super(key: key);
 
   @override 
   Widget build(BuildContext context) {
+    final state = Inherited.of(context, listen: false);
     return Container(
       height: 200.0,
       decoration: BoxDecoration(
@@ -185,7 +202,7 @@ class StampBottomSheet extends StatelessWidget {
                       context: context,
                       builder: (BuildContext context) => CustomDialog(emotion: emotion)
                     );
-                    onPress(emotion);
+                    state.addEmotion(item);
                   },
                   child: Image(image: AssetImage(emotion.assetName), height: 110.0)
                 );

@@ -33,10 +33,10 @@ class _SplashState extends State<Splash> {
   }
 
   void handleTimeout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String store_emotions = prefs.getString('emotions') ?? "";
-    List<Emotion> emotions = (jsonDecode(store_emotions) as List).map((json) => Emotion.fromJson(json)).toList();
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String store_emotions = prefs.getString('emotions') ?? "";
+    // List<Emotion> emotions = (jsonDecode(store_emotions) as List).map((json) => Emotion.fromJson(json)).toList();
     // print(emotions);
-    Navigator.of(context).pushReplacementNamed('/home', arguments: emotions);
+    Navigator.of(context).pushReplacementNamed('/home');
   }
 }
