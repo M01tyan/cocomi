@@ -27,6 +27,8 @@ dependencies:
   intl: ^0.15.6
   bezier_chart: "^1.0.14"
   shared_preferences: ^0.4.3
+  charts_flutter: ^0.8.1
+  tuple: ^1.0.3
 
 dev_dependencies:
   flutter_test:

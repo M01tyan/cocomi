@@ -19,6 +19,8 @@ class EmotionCardList extends StatelessWidget {
   // 感情カードと月カードのリストを作成する関数
   List<Widget> _createListEmotion(List<Emotion> emotions) {
     var pre_date = emotions[emotions.length-1].date;
+    if (pre_date.month == emotions[0].date.month)
+      pre_date = new DateTime(pre_date.year, pre_date.month-1, 0);
     final List<Widget> list_print = [];
     for(int i=0; i<emotions.length; i++) {
       if (pre_date.month != emotions[i].date.month) {
@@ -118,31 +120,30 @@ class _EmotionDayCard extends StatelessWidget {
             );
           },
           child: Padding(
-          padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
-          child: Column(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Text(
-                    emotion.printWeek,
-                    style: Theme.of(context).textTheme.body1.copyWith(
-                      color: emotion.weekColor
+            padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+            child: Column(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    Text(
+                      emotion.printWeek,
+                      style: Theme.of(context).textTheme.body1.copyWith(
+                        color: emotion.weekColor
+                      ),
                     ),
-                  ),
-                  Text(
-                    emotion.printDate.toString(),
-                    style: Theme.of(context).textTheme.body2,
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Image(image: AssetImage(emotion.assetName), fit: BoxFit.fitHeight),
-              ),
-            ],
+                    Text(
+                      emotion.printDate.toString(),
+                      style: Theme.of(context).textTheme.body2,
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Image(image: AssetImage(emotion.assetName), fit: BoxFit.fitHeight),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
