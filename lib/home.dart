@@ -12,8 +12,8 @@ class ParentScaffold extends StatelessWidget {
 
   Future<List<Emotion>> _getEmotions() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String store_emotions = prefs.getString('emotions') ?? "";
-    List<Emotion> emotions = (jsonDecode(store_emotions) as List).map((json) => Emotion.fromJson(json)).toList();
+    String storeEmotions = prefs.getString('emotions') ?? "";
+    List<Emotion> emotions = (jsonDecode(storeEmotions) as List).map((json) => Emotion.fromJson(json)).toList();
     return emotions;
   }
 
