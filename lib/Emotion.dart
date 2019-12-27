@@ -23,6 +23,7 @@ class Emotion {
       case 2: return 'assets/happy.png';
       // default: return 'assets/sad.png';
     }
+    return '';
   }
 
   int get printDate => date.day;

@@ -18,15 +18,15 @@ class EmotionCardList extends StatelessWidget {
 
   // 感情カードと月カードのリストを作成する関数
   List<Widget> _createListEmotion(List<Emotion> emotions) {
-    var pre_date = emotions[emotions.length-1].date;
-    if (pre_date.month == emotions[0].date.month)
-      pre_date = new DateTime(pre_date.year, pre_date.month-1, 0);
-    final List<Widget> list_print = [];
+    var preDate = emotions[emotions.length-1].date;
+    if (preDate.month == emotions[0].date.month)
+      preDate = new DateTime(preDate.year, preDate.month-1, 0);
+    final List<Widget> listPrint = [];
     for(int i=0; i<emotions.length; i++) {
-      if (pre_date.month != emotions[i].date.month) {
+      if (preDate.month != emotions[i].date.month) {
         // 月のカードを追加
-        pre_date = emotions[i].date;
-        list_print.add(
+        preDate = emotions[i].date;
+        listPrint.add(
           Padding(
             padding: EdgeInsets.fromLTRB(15.0, 4.0, 15.0, 4.0),
             child: _EmotionMonthCard(emotion: emotions[i]),
@@ -35,7 +35,7 @@ class EmotionCardList extends StatelessWidget {
         i--;
       } else {
         // 感情カードを追加
-        list_print.add(
+        listPrint.add(
           Padding(
             padding: EdgeInsets.fromLTRB(15.0, 4.0, 15.0, 4.0),
             child: _EmotionDayCard(emotion: emotions[i]),
@@ -43,7 +43,7 @@ class EmotionCardList extends StatelessWidget {
         );
       }
     }
-    return list_print;
+    return listPrint;
   }
 }
 
