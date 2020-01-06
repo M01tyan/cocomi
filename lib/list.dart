@@ -10,10 +10,20 @@ class EmotionCardList extends StatelessWidget {
   @override 
   Widget build(BuildContext context) {
     final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
-    return GridView.count(
-      crossAxisCount: 2,
-      children: _createListEmotion(emotions),
-    );
+    return emotions.length != 0 
+      ? GridView.count(
+        crossAxisCount: 2,
+        children: _createListEmotion(emotions),
+      ) : 
+      const Center(
+        child: const Text(
+          'あなたの気持ちを記録してください。',
+          style: const TextStyle(
+            fontSize: 15.0,
+            fontWeight: FontWeight.w800
+          ),
+        ),
+      );
   }
 
   // 感情カードと月カードのリストを作成する関数
@@ -86,65 +96,79 @@ class _EmotionDayCard extends StatelessWidget {
 
   Widget build(BuildContext context) {
     final deleteEmotion = Inherited.of(context, listen: false).deleteEmotion;
-    return Card(
-      child: SizedBox(
-        height: 80.0,
-        child: GestureDetector(
-          onLongPress: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return CupertinoAlertDialog(
-                  title: const Text('このカードを削除しますか？'),
-                  content: const Text('一度削除すると復元することはできません'),
-                  actions: <Widget>[
-                    CupertinoDialogAction(
-                      child: const Text(
-                        "CANCEL",
-                        style: const TextStyle(color: Colors.blue),
+    return GestureDetector(
+      child: Card(
+        child: SizedBox(
+          height: 80.0,
+          child: Stack(
+            children: <Widget>[
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                  child: Column(
+                    children: <Widget>[
+                      Column(
+                        children: <Widget>[
+                          Text(
+                            emotion.printWeek,
+                            style: Theme.of(context).textTheme.body1.copyWith(
+                              color: emotion.weekColor
+                            ),
+                          ),
+                          Text(
+                            emotion.printDay.toString(),
+                            style: Theme.of(context).textTheme.body2,
+                          ),
+                        ],
                       ),
-                      isDestructiveAction: true,
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    CupertinoDialogAction(
-                      child: const Text("OK"),
-                      isDestructiveAction: true,
-                      onPressed: () {
-                        deleteEmotion(emotion.date);
-                        Navigator.pop(context);
-                      }
-                    ),
-                  ]
-                );
-              }
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-            child: Column(
-              children: <Widget>[
-                Column(
-                  children: <Widget>[
-                    Text(
-                      emotion.printWeek,
-                      style: Theme.of(context).textTheme.body1.copyWith(
-                        color: emotion.weekColor
+                      Expanded(
+                        child: Image(image: AssetImage(emotion.assetName), fit: BoxFit.fitHeight),
                       ),
-                    ),
-                    Text(
-                      emotion.printDate.toString(),
-                      style: Theme.of(context).textTheme.body2,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                Expanded(
-                  child: Image(image: AssetImage(emotion.assetName), fit: BoxFit.fitHeight),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(0, 10.0, 5.0, 0),
+                  child: Text(emotion.printDate, style: Theme.of(context).textTheme.body1.copyWith(fontSize: 11)),
                 ),
-              ],
-            ),
+              )
+            ],
           ),
         ),
       ),
+      onLongPress: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: const Text('このカードを削除しますか？'),
+              content: const Text('一度削除すると復元することはできません'),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text(
+                    "CANCEL",
+                    style: const TextStyle(color: Colors.blue),
+                  ),
+                  isDestructiveAction: true,
+                  onPressed: () => Navigator.pop(context),
+                ),
+                CupertinoDialogAction(
+                  child: const Text("OK"),
+                  isDestructiveAction: true,
+                  onPressed: () {
+                    deleteEmotion(emotion.date);
+                    Navigator.pop(context);
+                  }
+                ),
+              ]
+            );
+          }
+        );
+      },
     );
   }
 }

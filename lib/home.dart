@@ -12,9 +12,14 @@ class ParentScaffold extends StatelessWidget {
 
   Future<List<Emotion>> _getEmotions() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String storeEmotions = prefs.getString('emotions') ?? "";
-    List<Emotion> emotions = (jsonDecode(storeEmotions) as List).map((json) => Emotion.fromJson(json)).toList();
-    return emotions;
+    // prefs.clear();
+    try {
+      String storeEmotions = prefs.getString('emotions') ?? "";
+      List<Emotion> emotions = (jsonDecode(storeEmotions) as List).map((json) => Emotion.fromJson(json)).toList();
+      return emotions;
+    } catch(e) {
+      return [];
+    }
   }
 
   @override 
@@ -49,7 +54,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   var emotions;
-
+  var latestAddDate;
+  
   @override
   void initState() {
     setState(() {

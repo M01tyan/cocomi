@@ -39,13 +39,13 @@ class ChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     drawingHeight = size.height * 0.8;
-    Tuple2<int, int> borderLineValues = _getMinAndMaxValues(emotions);
+    Tuple2<int, int> borderLineValues = _getMinAndMaxValues();
     _drawBottomLabels(canvas, size);
     _drawLines(canvas, borderLineValues.item1, borderLineValues.item2);
   }
 
   // 縦の最大値と最小値をタプルで返す
-  Tuple2<int, int> _getMinAndMaxValues(List<Emotion> emotions) {
+  Tuple2<int, int> _getMinAndMaxValues() {
     int maxWeight = 2;
     int minWeight = 0;
 
@@ -67,14 +67,14 @@ class ChartPainter extends CustomPainter {
       );
     }
     canvas.drawParagraph(
-      _buildParagraphForBottomLabel(emotions[emotions.length-1].date, emotions[emotions.length-2].date),
+      _buildParagraphForBottomLabel(emotions[emotions.length-1].date, new DateTime(2019, 1, 1)),
       new Offset((emotions.length-1)*80.0 + 20, 2.0 + drawingHeight),
     );
   }
 
   // 日時のラベリング
   ui.Paragraph _buildParagraphForBottomLabel(DateTime preDate, DateTime nowDate) {
-    final String printFormat = preDate.day != nowDate.day ? 'EE dd\n' : '\n';
+    final String printFormat = (preDate.year == nowDate.year && preDate.month == preDate.month && preDate.day == nowDate.day) ? '\n' : 'EE dd\n';
     final Color weekColor = preDate.weekday == 7 ? Colors.pink[400] : (preDate.weekday == 6 ? Colors.lightBlue[300] : Colors.white);
     ui.ParagraphBuilder builder = new ui.ParagraphBuilder(
         new ui.ParagraphStyle(fontSize: 12.0, textAlign: TextAlign.center))

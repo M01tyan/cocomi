@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 // sad: 0, normal: 1, happy: 2
 
 // 感情クラス
@@ -26,10 +27,11 @@ class Emotion {
     return '';
   }
 
-  int get printDate => date.day;
+  int get printDay => date.day;
   String get printWeek => _weekName[date.weekday];
   String get printJapaneseMonth => '${date.month}月';
   String get printEnglishMonth => _monthName[date.month-1];
+  String get printDate => DateFormat("HH:00").format(date);
 
   Color get weekColor {
     switch (date.weekday) {
