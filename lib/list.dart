@@ -132,10 +132,13 @@ class _EmotionDayCard extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(0, 10.0, 5.0, 0),
-                  child: Text(emotion.printDate, style: Theme.of(context).textTheme.body1.copyWith(fontSize: 11)),
+                  padding: EdgeInsets.fromLTRB(0, 10.0, 10.0, 0),
+                  child: SizedBox(
+                    height: 30.0,
+                    child: Image(image: AssetImage('assets/clock_00.png'))
+                  ),
                 ),
-              )
+              ),
             ],
           ),
         ),

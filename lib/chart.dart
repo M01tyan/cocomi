@@ -59,16 +59,16 @@ class ChartPainter extends CustomPainter {
 
   // 記録日時のラベル描写
   void _drawBottomLabels(Canvas canvas, Size size) {
-    for (int i = 0; i < emotions.length - 1; i++) {
-      ui.Paragraph paragraph = _buildParagraphForBottomLabel(emotions[i].date, emotions[i+1].date);
+    for (int i = emotions.length-1; i >= 1; i--) {
+      ui.Paragraph paragraph = _buildParagraphForBottomLabel(emotions[i-1].date, emotions[i].date);
       canvas.drawParagraph(
         paragraph,
         new Offset(i*80.0 + 20, 2.0 + drawingHeight),
       );
     }
     canvas.drawParagraph(
-      _buildParagraphForBottomLabel(emotions[emotions.length-1].date, new DateTime(2019, 1, 1)),
-      new Offset((emotions.length-1)*80.0 + 20, 2.0 + drawingHeight),
+      _buildParagraphForBottomLabel(new DateTime(2019, 1, 1), emotions[0].date),
+      new Offset(0.0 + 20, 2.0 + drawingHeight),
     );
   }
 
@@ -79,9 +79,9 @@ class ChartPainter extends CustomPainter {
     ui.ParagraphBuilder builder = new ui.ParagraphBuilder(
         new ui.ParagraphStyle(fontSize: 12.0, textAlign: TextAlign.center))
       ..pushStyle(ui.TextStyle(color: weekColor))
-      ..addText(DateFormat(printFormat).format(preDate))
+      ..addText(DateFormat(printFormat).format(nowDate))
       ..pushStyle(ui.TextStyle(color: Colors.white))
-      ..addText(DateFormat('HH:00').format(preDate));
+      ..addText(DateFormat('HH:00').format(nowDate));
     final ui.Paragraph paragraph = builder.build()
       ..layout(new ui.ParagraphConstraints(width: 50.0));
     return paragraph;
