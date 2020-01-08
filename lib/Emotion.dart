@@ -27,11 +27,12 @@ class Emotion {
     return '';
   }
 
-  int get printDay => date.day;
+  String get printDay => date.day.toString();
   String get printWeek => _weekName[date.weekday];
   String get printJapaneseMonth => '${date.month}月';
   String get printEnglishMonth => _monthName[date.month-1];
-  String get printDate => DateFormat("HH:00").format(date);
+  String get printAmPm => DateFormat("a").format(date);
+  String get printHour => DateFormat("hh").format(date).toString();
 
   Color get weekColor {
     switch (date.weekday) {

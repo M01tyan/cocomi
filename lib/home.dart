@@ -13,7 +13,6 @@ class ParentScaffold extends StatelessWidget {
 
   Future<List<Emotion>> _getEmotions() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // prefs.clear();
     try {
       String storeEmotions = prefs.getString('emotions') ?? "";
       List<Emotion> emotions = (jsonDecode(storeEmotions) as List).map((json) => Emotion.fromJson(json)).toList();
@@ -136,7 +135,7 @@ class _HomeState extends State<Home> {
                 elevation: 8.0
               );
             },
-            child: Image(image: AssetImage('assets/normal.png'), height: 80.0),
+            child: const Image(image: AssetImage('assets/normal.png'), height: 80.0),
           ),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -190,6 +189,7 @@ class StampBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = Inherited.of(context, listen: true);
     final nowDate = DateTime.now();
+    print(state.lastAddEmotionDate);
     return Container(
       height: 200.0,
       decoration: BoxDecoration(

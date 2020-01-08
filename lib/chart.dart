@@ -8,18 +8,34 @@ import 'emotion.dart';
 import 'home.dart';
 
 // 上部のチャートウィジェット
-class EmotionChart extends StatelessWidget {
+class EmotionChart extends StatefulWidget {
   const EmotionChart({Key key}) : super(key: key);
-  static ScrollController scrollController;
+
+  @override
+  _EmotionChartState createState() => _EmotionChartState();
+}
+
+class _EmotionChartState extends State<EmotionChart> {
+  var _scrollController = ScrollController();
+  var scrollWidth;
+
+  @override 
+  void initState() {
+    super.initState();
+    new Future.delayed(const Duration(milliseconds: 300))
+      .then((value) => _scrollController.animateTo(_scrollController.offset + scrollWidth/1.4,
+        curve: Curves.linear, duration: Duration(milliseconds: 150)
+      ));
+  }
 
   @override 
   Widget build(BuildContext context) {
     final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
-    final scrollWidth = max(MediaQuery.of(context).size.width, emotions.length.toDouble() * 80);
+    scrollWidth = max(MediaQuery.of(context).size.width, emotions.length.toDouble() * 80);
     return Container(
       color: Colors.deepPurpleAccent[100],
       child: SingleChildScrollView(
-        controller: scrollController,
+        controller: _scrollController,
         scrollDirection: Axis.horizontal,
         child: CustomPaint(
           painter: ChartPainter(emotions: emotions.reversed.toList()),
@@ -27,6 +43,19 @@ class EmotionChart extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override 
+  void didUpdateWidget(EmotionChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _scrollController.animateTo(_scrollController.offset + 100,
+      curve: Curves.linear, duration: Duration(milliseconds: 200)
+    );
+  }
+
+  @override 
+  void dispose() {
+    super.dispose();
   }
 }
 

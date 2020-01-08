@@ -111,14 +111,17 @@ class _EmotionDayCard extends StatelessWidget {
                       Column(
                         children: <Widget>[
                           Text(
-                            emotion.printWeek,
-                            style: Theme.of(context).textTheme.body1.copyWith(
+                            emotion.printAmPm,
+                            style: Theme.of(context).textTheme.title.copyWith(
+                              fontSize: 35,
                               color: emotion.weekColor
                             ),
                           ),
                           Text(
-                            emotion.printDay.toString(),
-                            style: Theme.of(context).textTheme.body2,
+                            emotion.printHour,
+                            style: Theme.of(context).textTheme.body2.copyWith(
+                              height: 0.8,
+                            ),
                           ),
                         ],
                       ),
@@ -130,12 +133,28 @@ class _EmotionDayCard extends StatelessWidget {
                 ),
               ),
               Align(
-                alignment: Alignment.topRight,
+                alignment: Alignment.topLeft,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(0, 10.0, 10.0, 0),
-                  child: SizedBox(
-                    height: 30.0,
-                    child: Image(image: AssetImage('assets/clock_00.png'))
+                  padding: EdgeInsets.fromLTRB(10.0, 20.0, 0, 0),
+                  child: Column(
+                    children: <Widget>[
+                      Text(
+                        emotion.printWeek,
+                        style: TextStyle(
+                          height: 0.5,
+                          fontSize: 11,
+                          color: emotion.weekColor
+                        )
+                      ),
+                      Text(
+                        emotion.printDay,
+                        style: TextStyle(
+                          height: 1,
+                          fontSize: 20,
+                          color: Colors.grey[700]
+                        )
+                      )
+                    ],
                   ),
                 ),
               ),
