@@ -49,6 +49,9 @@ flutter:
     - assets/normal.png
     - assets/happy.png
     - assets/sad.png
+    - assets/normal_point.png
+    - assets/happy_point.png
+    - assets/sad_point.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
