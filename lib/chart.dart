@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
+import 'package:image/image.dart' as newimage;  
 
 import 'emotion.dart';
 import 'home.dart';
@@ -18,10 +22,35 @@ class EmotionChart extends StatefulWidget {
 class _EmotionChartState extends State<EmotionChart> {
   var _scrollController = ScrollController();
   var scrollWidth;
+  ui.Image happyImage;
+  ui.Image normalImage;
+  ui.Image sadImage;
+  bool isImageloaded = false;
+
+  Future<Null> init() async {
+    final ByteData happyData = await rootBundle.load('assets/happy_point.png');
+    final ByteData normalData = await rootBundle.load('assets/normal_point.png');
+    final ByteData sadData = await rootBundle.load('assets/sad_point.png');
+    happyImage = await loadImage(new Uint8List.view(happyData.buffer));
+    normalImage = await loadImage(new Uint8List.view(normalData.buffer));
+    sadImage = await loadImage(new Uint8List.view(sadData.buffer));
+  }
+
+  Future<ui.Image> loadImage(List<int> img) async {
+    final Completer<ui.Image> completer = new Completer();
+    ui.decodeImageFromList(img, (ui.Image img) {
+      setState(() {
+        isImageloaded = true;
+      });
+      return completer.complete(img);
+    });
+    return completer.future;
+  }
 
   @override 
   void initState() {
     super.initState();
+    init();
     new Future.delayed(const Duration(milliseconds: 300))
       .then((value) => _scrollController.animateTo(_scrollController.offset + scrollWidth/1.4,
         curve: Curves.linear, duration: Duration(milliseconds: 150)
@@ -37,10 +66,17 @@ class _EmotionChartState extends State<EmotionChart> {
       child: SingleChildScrollView(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
-        child: CustomPaint(
-          painter: ChartPainter(emotions: emotions.reversed.toList()),
+        child: isImageloaded
+        ? CustomPaint(
+          painter: ChartPainter(
+            emotions: emotions.reversed.toList(),
+            happyImage: happyImage,
+            normalImage: normalImage,
+            sadImage: sadImage
+          ),
           size: Size(scrollWidth, MediaQuery.of(context).size.height)
-        ),
+        )
+        : Text('loading...'),
       ),
     );
   }
@@ -60,9 +96,16 @@ class _EmotionChartState extends State<EmotionChart> {
 }
 
 class ChartPainter extends CustomPainter {
-  const ChartPainter({this.emotions});
+  ChartPainter({
+    this.emotions,
+    this.happyImage,
+    this.normalImage,
+    this.sadImage
+  });
   final List<Emotion> emotions;
-
+  final ui.Image happyImage;
+  final ui.Image normalImage;
+  final ui.Image sadImage;
   static double drawingHeight;
 
   @override
@@ -132,21 +175,30 @@ class ChartPainter extends CustomPainter {
       path.cubicTo((startEntryOffset.dx + startEntryOffset.dx)/2, startEntryOffset.dy, (startEntryOffset.dx + startEntryOffset.dx)/2, startEntryOffset.dy, startEntryOffset.dx, startEntryOffset.dy);
       path.cubicTo((startEntryOffset.dx + endEntryOffset.dx)/2, startEntryOffset.dy, (startEntryOffset.dx + endEntryOffset.dx)/2, endEntryOffset.dy, endEntryOffset.dx, endEntryOffset.dy);
       canvas.drawPath(path, paint);
-      _drawCircle(canvas, endEntryOffset, 6.0, paint);
+      final Offset pointEntryOffset = _getEntryPointOffset(emotions[i+1], endXOffset);
+      _drawCircle(canvas, pointEntryOffset, emotions[i+1].emotion, paint);
     }
-    _drawCircle(canvas, _getEntryOffset(emotions[0], 40.0), 6.0, paint);
+    _drawCircle(canvas, _getEntryPointOffset(emotions[0], 30.0), emotions[0].emotion, paint);
   }
 
   // 感情ポイントを描写
-  void _drawCircle(Canvas canvas, Offset point, double radius, Paint paint) {
-    final paint = new Paint()
-      ..color = Colors.white;
-    canvas.drawCircle(point, radius, paint);
+  void _drawCircle(Canvas canvas, Offset point, int emotion, Paint paint) async {
+    var image;
+    switch (emotion) {
+      case 0: image = sadImage; break;
+      case 1: image = normalImage; break;
+      case 2: image = happyImage; break;
+    }
+    canvas.drawImage(image, point, paint);
   }
 
   // それぞれの感情描写のOffset
   Offset _getEntryOffset(Emotion emotion, double beginningOfChart) {
     return new Offset(beginningOfChart, drawingHeight/2 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1)));
+  }
+
+  Offset _getEntryPointOffset(Emotion emotion, double beginningOfChart) {
+    return new Offset(beginningOfChart - 10.0, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1)));
   }
 
   @override 
