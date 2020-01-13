@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -55,9 +54,11 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   var emotions;
   var lastAddEmotionDate;
+  var detailEmotion;
   
   Future<bool> _getLastAddEmotionDate() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove("lastAddEmotionDate");
     String lastAddEmotionDateString = prefs.getString("lastAddEmotionDate") ?? "2019-01-01 00:00";
     lastAddEmotionDate = DateTime.parse(lastAddEmotionDateString);
     return true;
@@ -77,7 +78,7 @@ class _HomeState extends State<Home> {
     emotions.insert(0, new Emotion(emotion: emotion, date: DateTime.now()));
     String jsonEmotions = jsonEncode(emotions);
     await prefs.setString('emotions', jsonEmotions);
-    await prefs.setString('lastAddEmotionDate', DateFormat("yyyy-mm-dd HH:mm").format(DateTime.now()).toString());
+    // await prefs.setString('lastAddEmotionDate', DateFormat("yyyy-mm-dd HH:mm").format(DateTime.now()).toString());
     setState(() {
       emotions = emotions;
       lastAddEmotionDate = DateTime.now();
@@ -94,11 +95,19 @@ class _HomeState extends State<Home> {
     });
   }
 
+  void _showEmotion(Emotion emotion) {
+    setState(() {
+      detailEmotion = emotion;
+    });
+  }
+
   @override 
   Widget build(BuildContext context) {
     return Inherited(
       emotions: emotions,
+      detailEmotion: detailEmotion,
       deleteEmotion: (DateTime date) => _deleteEmotion(date),
+      showEmotion: (Emotion emotion) => _showEmotion(emotion),
       child: Scaffold(
         body: GestureDetector(
           onTap: () {
@@ -108,7 +117,7 @@ class _HomeState extends State<Home> {
             children: <Widget>[
               // 上部のチャート
               Expanded(
-                flex: 3,
+                flex: 5,
                 child: EmotionChart(),
               ),
               // 下部のリスト
@@ -158,6 +167,8 @@ class Inherited extends InheritedWidget {
     this.lastAddEmotionDate,
     this.addEmotion,
     this.deleteEmotion,
+    this.showEmotion,
+    this.detailEmotion,
     @required Widget child,
   }) : assert(child != null),
        super(key: key, child: child);
@@ -165,7 +176,9 @@ class Inherited extends InheritedWidget {
   final List<Emotion> emotions;
   final Function addEmotion;
   final Function deleteEmotion;
+  final Function showEmotion;
   final DateTime lastAddEmotionDate;
+  final Emotion detailEmotion;
 
   static Inherited of(
     BuildContext context, {
@@ -177,7 +190,7 @@ class Inherited extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(Inherited old) => emotions.length != old.emotions.length || lastAddEmotionDate != old.lastAddEmotionDate;
+  bool updateShouldNotify(Inherited old) => emotions.length > old.emotions.length;
 }
 
 class StampBottomSheet extends StatelessWidget {

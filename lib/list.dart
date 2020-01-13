@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'emotion.dart';
 import 'home.dart';
 
@@ -9,12 +10,36 @@ class EmotionCardList extends StatelessWidget {
 
   @override 
   Widget build(BuildContext context) {
-    final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
-    return emotions.length != 0 
-      ? GridView.count(
-        crossAxisCount: 2,
-        children: _createListEmotion(emotions),
-      ) : 
+    final Emotion detailEmotion = Inherited.of(context, listen: true).detailEmotion;
+    return detailEmotion != null 
+      ? Container(
+        child: Center(
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  DateFormat("yyyy年MM月dd日").format(detailEmotion.date),
+                  style: TextStyle(
+                    fontSize: 25.0
+                  )
+                ),
+                Text(
+                  DateFormat("a hh:00").format(detailEmotion.date),
+                  style: TextStyle(
+                    fontSize: 40.0
+                  )
+                ),
+                Image(image: AssetImage(detailEmotion.assetName), fit: BoxFit.fitHeight, height: 140.0,)
+              ]
+            )
+        )
+      )
+      // GridView.count(
+      //   crossAxisCount: 2,
+      //   children: _createListEmotion(emotions),
+      // ) 
+      : 
       const Center(
         child: const Text(
           'あなたの気持ちを記録してください。',

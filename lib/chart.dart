@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'dart:typed_data';
-import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter/services.dart';
+import 'dart:math';
+import 'dart:typed_data';
+import 'dart:async';
 import 'dart:ui' as ui;
-import 'package:image/image.dart' as newimage;  
 
 import 'emotion.dart';
 import 'home.dart';
@@ -20,12 +19,13 @@ class EmotionChart extends StatefulWidget {
 }
 
 class _EmotionChartState extends State<EmotionChart> {
-  var _scrollController = ScrollController();
+  var _scrollController = new ScrollController();
   var scrollWidth;
   ui.Image happyImage;
   ui.Image normalImage;
   ui.Image sadImage;
   bool isImageloaded = false;
+  final GlobalKey _paintKey = new GlobalKey();
 
   Future<Null> init() async {
     final ByteData happyData = await rootBundle.load('assets/happy_point.png');
@@ -57,26 +57,44 @@ class _EmotionChartState extends State<EmotionChart> {
       ));
   }
 
+  _showDetail(Offset position, List<Emotion> emotions) {
+    final int i = ((position.dx - 40.0) / 80.0).round();
+    final Emotion emotion = emotions[i];
+    final RenderBox renderBoxRed = _paintKey.currentContext.findRenderObject();
+    final chartSize = renderBoxRed.size;
+    final double dy = chartSize.height*0.8/2 - (((chartSize.height*0.8 - 50) / (3 - 1))*(emotion.emotion - 1.1)).roundToDouble();
+    final double dx = (i * 80 + 40.0).roundToDouble();
+    if (dx - 10 <= position.dx.roundToDouble() && position.dx.roundToDouble() <= dx + 10
+     && dy - 10 <= position.dy.roundToDouble() && position.dy.roundToDouble() <= dy + 10) {
+      Inherited.of(context, listen: false).showEmotion(emotion);
+    }
+  }
+
   @override 
   Widget build(BuildContext context) {
     final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
     scrollWidth = max(MediaQuery.of(context).size.width, emotions.length.toDouble() * 80);
     return Container(
+      height: MediaQuery.of(context).size.height,
       color: Colors.deepPurpleAccent[100],
       child: SingleChildScrollView(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
         child: isImageloaded
-        ? CustomPaint(
-          painter: ChartPainter(
-            emotions: emotions.reversed.toList(),
-            happyImage: happyImage,
-            normalImage: normalImage,
-            sadImage: sadImage
+        ? GestureDetector(
+          onLongPressStart: (details) => _showDetail(details.localPosition, emotions.reversed.toList()),
+          child: CustomPaint(
+            key: _paintKey,
+            painter: ChartPainter(
+              emotions: emotions.reversed.toList(),
+              happyImage: happyImage,
+              normalImage: normalImage,
+              sadImage: sadImage
+            ),
+            size: Size(scrollWidth, MediaQuery.of(context).size.height)
           ),
-          size: Size(scrollWidth, MediaQuery.of(context).size.height)
         )
-        : Text('loading...'),
+        : const Center(child: CircularProgressIndicator()),
       ),
     );
   }
@@ -88,15 +106,10 @@ class _EmotionChartState extends State<EmotionChart> {
       curve: Curves.linear, duration: Duration(milliseconds: 200)
     );
   }
-
-  @override 
-  void dispose() {
-    super.dispose();
-  }
 }
 
 class ChartPainter extends CustomPainter {
-  ChartPainter({
+  const ChartPainter({
     this.emotions,
     this.happyImage,
     this.normalImage,
@@ -126,7 +139,7 @@ class ChartPainter extends CustomPainter {
 
   // 縦の幅を返す
   double get _calculateHorizontalOffsetStep {
-    return (drawingHeight - 30) / (3 - 1);
+    return (drawingHeight - 50) / (3 - 1);
   }
 
   // 記録日時のラベル描写
@@ -194,13 +207,13 @@ class ChartPainter extends CustomPainter {
 
   // それぞれの感情描写のOffset
   Offset _getEntryOffset(Emotion emotion, double beginningOfChart) {
-    return new Offset(beginningOfChart, drawingHeight/2 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1)));
+    return new Offset(beginningOfChart, drawingHeight/2 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.1)));
   }
 
   Offset _getEntryPointOffset(Emotion emotion, double beginningOfChart) {
-    return new Offset(beginningOfChart - 10.0, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1)));
+    return new Offset(beginningOfChart - 13.0, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.17)));
   }
 
   @override 
-  bool shouldRepaint(ChartPainter old) => emotions.length != old.emotions.length;
+  bool shouldRepaint(ChartPainter old) => emotions.length > old.emotions.length;
 }
