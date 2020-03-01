@@ -82,7 +82,7 @@ class _EmotionChartState extends State<EmotionChart> {
         scrollDirection: Axis.horizontal,
         child: isImageloaded
         ? GestureDetector(
-          onLongPressStart: (details) => _showDetail(details.localPosition, emotions.reversed.toList()),
+          // onLongPressStart: (details) => _showDetail(details.localPosition, emotions.reversed.toList()),
           child: CustomPaint(
             key: _paintKey,
             painter: ChartPainter(

@@ -117,7 +117,7 @@ class _HomeState extends State<Home> {
             children: <Widget>[
               // 上部のチャート
               Expanded(
-                flex: 5,
+                flex: 3,
                 child: EmotionChart(),
               ),
               // 下部のリスト
@@ -202,7 +202,6 @@ class StampBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = Inherited.of(context, listen: true);
     final nowDate = DateTime.now();
-    print(state.lastAddEmotionDate);
     return Container(
       height: 200.0,
       decoration: BoxDecoration(

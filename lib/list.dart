@@ -1,57 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:admob_flutter/admob_flutter.dart';
 import 'emotion.dart';
 import 'home.dart';
 
 // 下部の感情カードリスト
-class EmotionCardList extends StatelessWidget {
+class EmotionCardList extends StatefulWidget {
   const EmotionCardList({Key key}) : super(key: key);
+
+  @override
+  _EmotionCardListState createState() => _EmotionCardListState();
+}
+
+class _EmotionCardListState extends State<EmotionCardList> {
+
+  @override
+  void initState() {
+    super.initState();
+    Admob.initialize("ca-app-pub-3940256099942544~1458002511");
+  }
 
   @override 
   Widget build(BuildContext context) {
-    final Emotion detailEmotion = Inherited.of(context, listen: true).detailEmotion;
-    return detailEmotion != null 
-      ? Container(
-        child: Center(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  DateFormat("yyyy年MM月dd日").format(detailEmotion.date),
-                  style: TextStyle(
-                    fontSize: 25.0
-                  )
-                ),
-                Text(
-                  DateFormat("a hh:00").format(detailEmotion.date),
-                  style: TextStyle(
-                    fontSize: 40.0
-                  )
-                ),
-                Image(image: AssetImage(detailEmotion.assetName), fit: BoxFit.fitHeight, height: 140.0,)
-              ]
-            )
-        )
-      )
-      // GridView.count(
-      //   crossAxisCount: 2,
-      //   children: _createListEmotion(emotions),
-      // ) 
-      : 
-      const Center(
-        child: const Text(
-          'あなたの気持ちを記録してください。',
-          style: const TextStyle(
-            fontSize: 15.0,
-            fontWeight: FontWeight.w800
-          ),
+    final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: emotions.length != 0
+          ? GridView.count(
+            crossAxisCount: 2,
+            children: _createListEmotion(emotions)
+          ) :
+          const Center(
+            child: const Text(
+              'あなたの気持ちを記録してください。',
+              style: const TextStyle(
+                fontSize: 15.0,
+                fontWeight: FontWeight.w800
+              ),
+            ),
+          )
         ),
-      );
+        SizedBox(
+          height: 60,
+          child: AdmobBanner(
+            adUnitId: "ca-app-pub-3940256099942544/6300978111",
+            adSize: AdmobBannerSize.FULL_BANNER,
+          )
+        )
+      ]
+    );
   }
 
-  // 感情カードと月カードのリストを作成する関数
   List<Widget> _createListEmotion(List<Emotion> emotions) {
     var preDate = emotions[emotions.length-1].date;
     if (preDate.month == emotions[0].date.month)
