@@ -73,7 +73,7 @@ class _EmotionChartState extends State<EmotionChart> {
   @override 
   Widget build(BuildContext context) {
     final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
-    scrollWidth = max(MediaQuery.of(context).size.width, emotions.length.toDouble() * 80);
+    scrollWidth = max(MediaQuery.of(context).size.width, emotions.length.toDouble() * 80 + 20.0);
     return Container(
       height: MediaQuery.of(context).size.height,
       color: Colors.deepPurpleAccent[100],
@@ -126,6 +126,7 @@ class ChartPainter extends CustomPainter {
     drawingHeight = size.height * 0.8;
     Tuple2<int, int> borderLineValues = _getMinAndMaxValues();
     _drawBottomLabels(canvas, size);
+    _drawLeftLabels(canvas, size);
     _drawLines(canvas, borderLineValues.item1, borderLineValues.item2);
   }
 
@@ -148,19 +149,19 @@ class ChartPainter extends CustomPainter {
       ui.Paragraph paragraph = _buildParagraphForBottomLabel(emotions[i-1].date, emotions[i].date);
       canvas.drawParagraph(
         paragraph,
-        new Offset(i*80.0 + 20, 2.0 + drawingHeight),
+        new Offset(i*80.0 + 40, 2.0 + drawingHeight),
       );
     }
     canvas.drawParagraph(
       _buildParagraphForBottomLabel(new DateTime(2019, 1, 1), emotions[0].date),
-      new Offset(0.0 + 20, 2.0 + drawingHeight),
+      new Offset(0.0 + 40, 2.0 + drawingHeight),
     );
   }
 
   // 日時のラベリング
   ui.Paragraph _buildParagraphForBottomLabel(DateTime preDate, DateTime nowDate) {
     final String printFormat = (preDate.year == nowDate.year && preDate.month == preDate.month && preDate.day == nowDate.day) ? '\n' : 'EE dd\n';
-    final Color weekColor = preDate.weekday == 7 ? Colors.pink[400] : (preDate.weekday == 6 ? Colors.lightBlue[300] : Colors.white);
+    final Color weekColor = nowDate.weekday == 7 ? Colors.pink[400] : (nowDate.weekday == 6 ? Colors.lightBlue[300] : Colors.white);
     ui.ParagraphBuilder builder = new ui.ParagraphBuilder(
         new ui.ParagraphStyle(fontSize: 12.0, textAlign: TextAlign.center))
       ..pushStyle(ui.TextStyle(color: weekColor))
@@ -172,37 +173,41 @@ class ChartPainter extends CustomPainter {
     return paragraph;
   }
 
-  // 感情ラインの描写
-  void _drawLines(Canvas canvas, int minLineValue, int maxLineValue) {
+  // 感情のラベル描写
+  _drawLeftLabels(Canvas canvas, Size size) {
     final paint = new Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
+    canvas.drawImage(happyImage, _getLeftLabelOffset(new Emotion(emotion: 2, date: DateTime.now()), 10.0), paint);
+    canvas.drawImage(normalImage,  _getLeftLabelOffset(new Emotion(emotion: 1, date: DateTime.now()), 10.0), paint);
+    canvas.drawImage(sadImage,  _getLeftLabelOffset(new Emotion(emotion: 0, date: DateTime.now()), 10.0), paint);
+  }
+
+  // 感情ラインの描写
+  void _drawLines(Canvas canvas, int minLineValue, int maxLineValue) {
+    final linePaint = new Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+    final circlePaint = new Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 3.0;
     for (int i = 0; i < emotions.length-1; i++) {
-      final beginXOffset = i * 80 + 40.0;
-      final endXOffset = (i+1) * 80 + 40.0;
+      final beginXOffset = i * 80 + 60.0;
+      final endXOffset = (i+1) * 80 + 60.0;
       Path path = Path();
       Offset startEntryOffset = _getEntryOffset(emotions[i], beginXOffset);
       Offset endEntryOffset = _getEntryOffset(emotions[i + 1], endXOffset);
       path.moveTo(startEntryOffset.dx, startEntryOffset.dy);
       path.cubicTo((startEntryOffset.dx + startEntryOffset.dx)/2, startEntryOffset.dy, (startEntryOffset.dx + startEntryOffset.dx)/2, startEntryOffset.dy, startEntryOffset.dx, startEntryOffset.dy);
       path.cubicTo((startEntryOffset.dx + endEntryOffset.dx)/2, startEntryOffset.dy, (startEntryOffset.dx + endEntryOffset.dx)/2, endEntryOffset.dy, endEntryOffset.dx, endEntryOffset.dy);
-      canvas.drawPath(path, paint);
+      canvas.drawPath(path, linePaint);
       final Offset pointEntryOffset = _getEntryPointOffset(emotions[i+1], endXOffset);
-      _drawCircle(canvas, pointEntryOffset, emotions[i+1].emotion, paint);
+      canvas.drawCircle(pointEntryOffset, 5.0, circlePaint);
     }
-    _drawCircle(canvas, _getEntryPointOffset(emotions[0], 30.0), emotions[0].emotion, paint);
-  }
-
-  // 感情ポイントを描写
-  void _drawCircle(Canvas canvas, Offset point, int emotion, Paint paint) async {
-    var image;
-    switch (emotion) {
-      case 0: image = sadImage; break;
-      case 1: image = normalImage; break;
-      case 2: image = happyImage; break;
-    }
-    canvas.drawImage(image, point, paint);
+    canvas.drawCircle(_getEntryPointOffset(emotions[0], 60.0), 5.0, circlePaint);
   }
 
   // それぞれの感情描写のOffset
@@ -210,8 +215,12 @@ class ChartPainter extends CustomPainter {
     return new Offset(beginningOfChart, drawingHeight/2 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.1)));
   }
 
-  Offset _getEntryPointOffset(Emotion emotion, double beginningOfChart) {
-    return new Offset(beginningOfChart - 13.0, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.17)));
+  Offset _getEntryPointOffset(Emotion emotion, double beginningOfChartX) {
+    return new Offset(beginningOfChartX, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.37)));
+  }
+
+  Offset _getLeftLabelOffset(Emotion emotion, double begginingOfChartX) {
+    return new Offset(begginingOfChartX, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.1)));
   }
 
   @override 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:intl/intl.dart';
 import 'package:admob_flutter/admob_flutter.dart';
 import 'emotion.dart';
 import 'home.dart';
@@ -18,7 +17,8 @@ class _EmotionCardListState extends State<EmotionCardList> {
   @override
   void initState() {
     super.initState();
-    Admob.initialize("ca-app-pub-3940256099942544~1458002511");
+    Admob.initialize("ca-app-pub-4060274085696934/2178993822");
+    // Admob.initialize("ca-app-pub-3940256099942544~3347511713");
   }
 
   @override 
@@ -45,7 +45,8 @@ class _EmotionCardListState extends State<EmotionCardList> {
         SizedBox(
           height: 60,
           child: AdmobBanner(
-            adUnitId: "ca-app-pub-3940256099942544/6300978111",
+            adUnitId: "ca-app-pub-4060274085696934/2178993822",
+            // adUnitId: "ca-app-pub-3940256099942544/6300978111",
             adSize: AdmobBannerSize.FULL_BANNER,
           )
         )

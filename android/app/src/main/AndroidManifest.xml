@@ -8,7 +8,7 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="cocomi"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@drawable/icon">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -28,6 +28,7 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~1458002511"/>
+            android:value="ca-app-pub-4060274085696934~3346286599"/>
+            <!-- android:value="ca-app-pub-3940256099942544~3347511713"/> -->
     </application>
 </manifest>
