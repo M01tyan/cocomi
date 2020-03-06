@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:intl/intl.dart';
 import 'emotion.dart';
 import 'list.dart';
 import 'chart.dart';
@@ -60,6 +60,7 @@ class _HomeState extends State<Home> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove("lastAddEmotionDate");
     String lastAddEmotionDateString = prefs.getString("lastAddEmotionDate") ?? "2019-01-01 00:00";
+    // String lastAddEmotionDateString = "2019-01-01 00:00";
     lastAddEmotionDate = DateTime.parse(lastAddEmotionDateString);
     return true;
   }
@@ -78,7 +79,7 @@ class _HomeState extends State<Home> {
     emotions.insert(0, new Emotion(emotion: emotion, date: DateTime.now()));
     String jsonEmotions = jsonEncode(emotions);
     await prefs.setString('emotions', jsonEmotions);
-    // await prefs.setString('lastAddEmotionDate', DateFormat("yyyy-mm-dd HH:mm").format(DateTime.now()).toString());
+    await prefs.setString('lastAddEmotionDate', DateFormat("yyyy-mm-dd HH:mm").format(DateTime.now()).toString());
     setState(() {
       emotions = emotions;
       lastAddEmotionDate = DateTime.now();
@@ -90,8 +91,10 @@ class _HomeState extends State<Home> {
     emotions.removeWhere((item) => item.date == removeDate);
     String jsonEmotions = jsonEncode(emotions);
     await prefs.setString('emotions', jsonEmotions);
+    await prefs.setString('lastAddEmotionDate', "2019-01-01 00:00");
     setState(() {
       emotions = emotions;
+      lastAddEmotionDate = DateTime.parse("2019-01-01 00:00");
     });
   }
 
