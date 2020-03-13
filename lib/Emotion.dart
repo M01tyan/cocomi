@@ -14,7 +14,7 @@ class Emotion {
   final DateTime date;
   final int emotion;
   
-  final _weekName = ['', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  final _weekList = ['', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   final _monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   String get assetName {
@@ -28,17 +28,25 @@ class Emotion {
   }
 
   String get printDay => date.day.toString();
-  String get printWeek => _weekName[date.weekday];
+  String get printWeek => _weekList[date.weekday];
   String get printJapaneseMonth => '${date.month}月';
   String get printEnglishMonth => _monthName[date.month-1];
   String get printAmPm => DateFormat("a").format(date);
-  String get printHour => DateFormat("hh").format(date).toString();
+  String get printTime => DateFormat("HH:mm").format(date).toString();
 
   Color get weekColor {
     switch (date.weekday) {
       case 6: return Colors.lightBlue[600];
       case 7: return Colors.red[500];
       default: return Colors.grey[700];
+    }
+  }
+
+  int get emotionColor {
+    switch (emotion) {
+      case 0: return 0xFF6CB2F8;
+      case 1: return 0xFFF8C36D;
+      case 2: return 0xFFF8B4EE;
     }
   }
 

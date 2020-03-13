@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:intl/intl.dart';
 import 'emotion.dart';
 import 'list.dart';
 import 'chart.dart';
@@ -53,21 +52,10 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   var emotions;
-  var lastAddEmotionDate;
   var detailEmotion;
-  
-  Future<bool> _getLastAddEmotionDate() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove("lastAddEmotionDate");
-    String lastAddEmotionDateString = prefs.getString("lastAddEmotionDate") ?? "2019-01-01 00:00";
-    // String lastAddEmotionDateString = "2019-01-01 00:00";
-    lastAddEmotionDate = DateTime.parse(lastAddEmotionDateString);
-    return true;
-  }
 
   @override
   void initState() {
-    _getLastAddEmotionDate();
     setState(() {
       emotions = widget.emotions;
     });
@@ -79,10 +67,8 @@ class _HomeState extends State<Home> {
     emotions.insert(0, new Emotion(emotion: emotion, date: DateTime.now()));
     String jsonEmotions = jsonEncode(emotions);
     await prefs.setString('emotions', jsonEmotions);
-    await prefs.setString('lastAddEmotionDate', DateFormat("yyyy-mm-dd HH:mm").format(DateTime.now()).toString());
     setState(() {
       emotions = emotions;
-      lastAddEmotionDate = DateTime.now();
     });
   }
 
@@ -91,10 +77,8 @@ class _HomeState extends State<Home> {
     emotions.removeWhere((item) => item.date == removeDate);
     String jsonEmotions = jsonEncode(emotions);
     await prefs.setString('emotions', jsonEmotions);
-    await prefs.setString('lastAddEmotionDate', "2019-01-01 00:00");
     setState(() {
       emotions = emotions;
-      lastAddEmotionDate = DateTime.parse("2019-01-01 00:00");
     });
   }
 
@@ -140,7 +124,6 @@ class _HomeState extends State<Home> {
                 context: context,
                 backgroundColor: Colors.transparent,
                 builder: (BuildContext builder) => Inherited(
-                  lastAddEmotionDate: lastAddEmotionDate,
                   addEmotion: (int emotion) => _addEmotion(emotion), 
                   child: StampBottomSheet()
                 ),
@@ -167,7 +150,6 @@ class Inherited extends InheritedWidget {
   const Inherited({
     Key key,
     this.emotions,
-    this.lastAddEmotionDate,
     this.addEmotion,
     this.deleteEmotion,
     this.showEmotion,
@@ -180,7 +162,6 @@ class Inherited extends InheritedWidget {
   final Function addEmotion;
   final Function deleteEmotion;
   final Function showEmotion;
-  final DateTime lastAddEmotionDate;
   final Emotion detailEmotion;
 
   static Inherited of(
@@ -204,7 +185,6 @@ class StampBottomSheet extends StatelessWidget {
   @override 
   Widget build(BuildContext context) {
     final state = Inherited.of(context, listen: true);
-    final nowDate = DateTime.now();
     return Container(
       height: 200.0,
       decoration: BoxDecoration(
@@ -227,9 +207,7 @@ class StampBottomSheet extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.center,
-            child: nowDate.isAfter(state.lastAddEmotionDate)
-                && state.lastAddEmotionDate.hour != nowDate.hour
-            ? Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const [0, 1, 2].map((item) { 
                 final Emotion emotion = new Emotion(emotion: item, date: DateTime.now());
@@ -246,7 +224,6 @@ class StampBottomSheet extends StatelessWidget {
                 );
               }).toList(),
             )
-            : const Text('1時間に一度だけ記録できます'),
           ),
         ]
       ),

@@ -36,6 +36,7 @@ class _EmotionChartState extends State<EmotionChart> {
     sadImage = await loadImage(new Uint8List.view(sadData.buffer));
   }
 
+  // チャートに画像を表示するためにImageをロード
   Future<ui.Image> loadImage(List<int> img) async {
     final Completer<ui.Image> completer = new Completer();
     ui.decodeImageFromList(img, (ui.Image img) {
@@ -167,7 +168,7 @@ class ChartPainter extends CustomPainter {
       ..pushStyle(ui.TextStyle(color: weekColor))
       ..addText(DateFormat(printFormat).format(nowDate))
       ..pushStyle(ui.TextStyle(color: Colors.white))
-      ..addText(DateFormat('HH:00').format(nowDate));
+      ..addText(DateFormat('HH:mm').format(nowDate));
     final ui.Paragraph paragraph = builder.build()
       ..layout(new ui.ParagraphConstraints(width: 50.0));
     return paragraph;
@@ -210,15 +211,17 @@ class ChartPainter extends CustomPainter {
     canvas.drawCircle(_getEntryPointOffset(emotions[0], 60.0), 5.0, circlePaint);
   }
 
-  // それぞれの感情描写のOffset
+  // それぞれの感情カーブ描写のOffset
   Offset _getEntryOffset(Emotion emotion, double beginningOfChart) {
     return new Offset(beginningOfChart, drawingHeight/2 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.1)));
   }
 
+  // 点を描写するためのOffset
   Offset _getEntryPointOffset(Emotion emotion, double beginningOfChartX) {
     return new Offset(beginningOfChartX, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.37)));
   }
 
+  // 日付を描写するためのOffset
   Offset _getLeftLabelOffset(Emotion emotion, double begginingOfChartX) {
     return new Offset(begginingOfChartX, drawingHeight/2.45 - (_calculateHorizontalOffsetStep*(emotion.emotion - 1.1)));
   }
