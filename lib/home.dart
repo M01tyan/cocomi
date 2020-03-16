@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/cupertino.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'emotion.dart';
@@ -53,6 +54,9 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   var emotions;
   var detailEmotion;
+  String _text = '';
+  TextEditingController _textEditingController;
+  FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -60,6 +64,7 @@ class _HomeState extends State<Home> {
       emotions = widget.emotions;
     });
     super.initState();
+    _textEditingController = new TextEditingController(text: '');
   }
 
   void _addEmotion(int emotion) async {
@@ -90,6 +95,10 @@ class _HomeState extends State<Home> {
 
   @override 
   Widget build(BuildContext context) {
+    // if (focusNode != null && focusNode.hasFocus == true) {
+    //   var toolBar = _normalToolBar();
+    //   columnWidget.add(toolBar);
+    // }
     return Inherited(
       emotions: emotions,
       detailEmotion: detailEmotion,
@@ -119,17 +128,83 @@ class _HomeState extends State<Home> {
           height: 80.0,
           width: 80.0,
           child: FloatingActionButton(
-            onPressed: () {
-              showBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (BuildContext builder) => Inherited(
-                  addEmotion: (int emotion) => _addEmotion(emotion), 
-                  child: StampBottomSheet()
-                ),
-                elevation: 8.0
-              );
-            },
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (BuildContext builder) {
+                return DraggableScrollableSheet(
+                initialChildSize: 0.2,
+                minChildSize: 0.15,
+                maxChildSize: 0.6,
+                builder: (BuildContext builder, ScrollController scrollController) {
+                  return SingleChildScrollView(
+                    controller: scrollController,
+                    child: Container(
+                      height: MediaQuery.of(context).size.height*0.6,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(topLeft: Radius.circular(25.0), topRight: Radius.circular(25.0)),
+                      ),
+                      child: Stack(
+                        children: <Widget>[
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: Container(
+                              width: 50.0, 
+                              height: 5.0,
+                              margin: EdgeInsets.only(top: 10.0),
+                              decoration: BoxDecoration(
+                                color: Colors.black26,
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 30.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: const [0, 1, 2].map((item) { 
+                                final Emotion emotion = new Emotion(emotion: item, date: DateTime.now());
+                                return GestureDetector(
+                                  onTap: () async  {
+                                    Navigator.pop(context);
+                                    await showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) => CustomDialog(emotion: emotion)
+                                    );
+                                    // state.addEmotion(item);
+                                  },
+                                  child: Image(image: AssetImage(emotion.assetName), height: 110.0)
+                                );
+                              }).toList(),
+                            )
+                          ),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(20.0, 160.0, 20.0, 0.0),
+                            child: TextField(
+                              controller: _textEditingController,
+                              maxLines: 5,
+                              style: TextStyle(fontSize: 20.0),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'メモ',
+                              ),
+                              focusNode: this.focusNode,
+                              onChanged: (value) {
+                                setState(() {
+                                  _text = value;
+                                });
+                              },
+                            )
+                          ),
+                        ],
+                      ),
+                    )
+                  );
+                }
+              );}
+            ),
             child: const Image(image: AssetImage('assets/normal.png'), height: 80.0),
           ),
         ),
@@ -143,6 +218,26 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
+  }
+
+  Widget _normalToolBar() {
+    return Container(
+      decoration: BoxDecoration(
+          border: BorderDirectional(top: BorderSide(color: Colors.black)),
+          color: Colors.grey[200]),
+      height: 50.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CupertinoButton(
+            child: Text('完了'),
+            onPressed: () {
+              focusNode.unfocus(); //unfocus()でフォーカスが外れる
+            },
+          )
+        ],
+      ));
   }
 }
 
@@ -186,7 +281,7 @@ class StampBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = Inherited.of(context, listen: true);
     return Container(
-      height: 200.0,
+      height: 400.0,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(topLeft: Radius.circular(25.0), topRight: Radius.circular(25.0)),
@@ -212,9 +307,9 @@ class StampBottomSheet extends StatelessWidget {
               children: const [0, 1, 2].map((item) { 
                 final Emotion emotion = new Emotion(emotion: item, date: DateTime.now());
                 return GestureDetector(
-                  onTap: () {
+                  onTap: () async  {
                     Navigator.pop(context);
-                    showDialog(
+                    await showDialog(
                       context: context,
                       builder: (BuildContext context) => CustomDialog(emotion: emotion)
                     );
@@ -316,5 +411,53 @@ class _AnimatedStampState extends State<AnimatedStamp> {
 
   void _closeDialog() {
     Navigator.pop(context);
+  }
+}
+
+class MemoForm extends StatefulWidget {
+  MemoForm({Key key}) : super(key: key);
+
+  @override
+  _MemoFormState createState() => _MemoFormState();
+}
+
+class _MemoFormState extends State<MemoForm> {
+  TextEditingController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override 
+  Widget build(BuildContext context) {
+    return Container(
+      height: 300.0,
+      child: TextField(
+        controller: _controller,
+        onSubmitted: (String value) async {
+          await showDialog<void>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Thanks!'),
+                content: Text ('You typed "$value".'),
+                actions: <Widget>[
+                  FlatButton(
+                    onPressed: () { Navigator.pop(context); },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      )
+    );
   }
 }

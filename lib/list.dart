@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:admob_flutter/admob_flutter.dart';
+import 'package:flip_card/flip_card.dart';
 import 'emotion.dart';
 import 'home.dart';
 
@@ -17,7 +18,7 @@ class _EmotionCardListState extends State<EmotionCardList> {
   @override
   void initState() {
     super.initState();
-    Admob.initialize("ca-app-pub-4060274085696934/2178993822");
+    // Admob.initialize("ca-app-pub-4060274085696934/2178993822");
   }
 
   @override 
@@ -32,11 +33,9 @@ class _EmotionCardListState extends State<EmotionCardList> {
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 2.0, 20.0, 2.0),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0)
-                    ),
-                    child: Container(
+                  child: FlipCard(
+                    direction: FlipDirection.VERTICAL,
+                    front: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(30.0),
                         gradient: LinearGradient(
@@ -53,7 +52,7 @@ class _EmotionCardListState extends State<EmotionCardList> {
                         children: <Widget>[
                           Positioned(
                             left: 30.0,
-                            top: 20.0,
+                            top: 30.0,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -62,22 +61,36 @@ class _EmotionCardListState extends State<EmotionCardList> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: _createDateTextList(emotions[index]),
                                 ),
-                                Text(emotions[index].printTime, style: TextStyle(fontSize: 40.0, color: Colors.grey[700], height: 0.85))
+                                Text(emotions[index].printTime, style: TextStyle(fontSize: 30.0, color: Colors.grey[700], height: 0.85))
                               ],
                             )
                           ),
                           Positioned(
-                            right: 50.0,
-                            child: SizedBox(
-                              height: 110.0,
-                              child: Image.asset(
-                                emotions[index].assetName,
-                                fit: BoxFit.fitHeight
-                              )
+                            right: 70.0,
+                            top: 10.0,
+                            child: Image.asset(
+                              emotions[index].assetName,
+                              height: 90.0,
+                              fit: BoxFit.fitHeight                              
                             )
                           )
                         ],
                       )
+                    ),
+                    back: Container(
+                      height: 110.0,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30.0),
+                        gradient: LinearGradient(
+                          begin: FractionalOffset(0.8, 0.7),
+                          end: FractionalOffset.bottomRight,
+                          colors: [
+                            const Color(0xFFFFFFFF),
+                            Color(emotions[index].emotionColor),
+                          ],
+                        ),
+                      ),
+                      child: Text("back")
                     )
                   )
                 );
@@ -93,14 +106,13 @@ class _EmotionCardListState extends State<EmotionCardList> {
             ),
           )
         ),
-        SizedBox(
-          height: 60,
-          child: AdmobBanner(
-            adUnitId: "ca-app-pub-4060274085696934/2178993822",
-            // adUnitId: "ca-app-pub-3940256099942544/6300978111",
-            adSize: AdmobBannerSize.FULL_BANNER,
-          )
-        )
+        // SizedBox(
+        //   height: 60,
+        //   child: AdmobBanner(
+        //     adUnitId: "ca-app-pub-4060274085696934/2178993822",
+        //     adSize: AdmobBannerSize.FULL_BANNER,
+        //   )
+        // )
       ]
     );
   }
@@ -111,7 +123,7 @@ class _EmotionCardListState extends State<EmotionCardList> {
       Text("${emotion.date.month}/", style: TextStyle(fontSize: 20.0, color: Colors.grey[700]))
     );
     dateListWidget.add(
-      Text("${emotion.date.day}", style: TextStyle(fontSize: 40.0, color: Colors.grey[700], height: 1.0))
+      Text("${emotion.date.day}", style: TextStyle(fontSize: 30.0, color: Colors.grey[700], height: 1.0))
     );
     dateListWidget.add(
       Padding(
@@ -130,7 +142,7 @@ class _EmotionCardListState extends State<EmotionCardList> {
     final List<String> weekList = emotion.printWeek.split("");
     for (final str in weekList) {
       weekListWidget.add(
-        Text(str, style: TextStyle(fontSize: 12.0, color: emotion.weekColor, height: 0.8))
+        Text(str, style: TextStyle(fontSize: 10.0, color: emotion.weekColor, height: 0.8))
       );
     }
     return weekListWidget;

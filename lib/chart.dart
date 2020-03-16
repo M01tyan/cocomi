@@ -75,7 +75,8 @@ class _EmotionChartState extends State<EmotionChart> {
   Widget build(BuildContext context) {
     final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
     scrollWidth = max(MediaQuery.of(context).size.width, emotions.length.toDouble() * 80 + 20.0);
-    return Container(
+    return emotions.length == 0
+    ? Container(
       height: MediaQuery.of(context).size.height,
       color: Colors.deepPurpleAccent[100],
       child: SingleChildScrollView(
@@ -97,6 +98,12 @@ class _EmotionChartState extends State<EmotionChart> {
         )
         : const Center(child: CircularProgressIndicator()),
       ),
+    ) :
+    Container(
+      alignment: Alignment.center,
+      height: MediaQuery.of(context).size.height,
+      color: Colors.deepPurpleAccent[100],
+      child: const Text("データなし")
     );
   }
 
