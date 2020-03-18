@@ -23,7 +23,9 @@ class ParentScaffold extends StatelessWidget {
 
   @override 
   Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: const Text('cocomi'),
         backgroundColor: Colors.amber[700],
@@ -33,7 +35,7 @@ class ParentScaffold extends StatelessWidget {
         future: _getEmotions(),
         builder: (BuildContext context, AsyncSnapshot<List<Emotion>> snapshot) {
           if (snapshot.hasData) {
-            return Home(emotions: snapshot.data);
+            return Home(emotions: snapshot.data, bottom: bottom);
           } else {
             return Center(child: CircularProgressIndicator());
           }
@@ -44,8 +46,9 @@ class ParentScaffold extends StatelessWidget {
 }
 
 class Home extends StatefulWidget {
-  const Home({ Key key, this.emotions }) : super(key: key);
+  const Home({ Key key, this.emotions, this.bottom }) : super(key: key);
   final emotions;
+  final bottom;
 
   @override
   _HomeState createState() => _HomeState();
@@ -54,9 +57,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   var emotions;
   var detailEmotion;
-  String _text = '';
-  TextEditingController _textEditingController;
-  FocusNode focusNode = FocusNode();
+  
 
   @override
   void initState() {
@@ -64,7 +65,11 @@ class _HomeState extends State<Home> {
       emotions = widget.emotions;
     });
     super.initState();
-    _textEditingController = new TextEditingController(text: '');
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void _addEmotion(int emotion) async {
@@ -95,18 +100,16 @@ class _HomeState extends State<Home> {
 
   @override 
   Widget build(BuildContext context) {
-    // if (focusNode != null && focusNode.hasFocus == true) {
-    //   var toolBar = _normalToolBar();
-    //   columnWidget.add(toolBar);
-    // }
     return Inherited(
       emotions: emotions,
       detailEmotion: detailEmotion,
       deleteEmotion: (DateTime date) => _deleteEmotion(date),
       showEmotion: (Emotion emotion) => _showEmotion(emotion),
       child: Scaffold(
+        resizeToAvoidBottomPadding: false,
         body: GestureDetector(
           onTap: () {
+            FocusScope.of(context).requestFocus(FocusNode());
             Navigator.popUntil(context, ModalRoute.withName('/home'));
           },
           child: Column(
@@ -133,77 +136,50 @@ class _HomeState extends State<Home> {
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
               builder: (BuildContext builder) {
-                return DraggableScrollableSheet(
-                initialChildSize: 0.2,
-                minChildSize: 0.15,
-                maxChildSize: 0.6,
-                builder: (BuildContext builder, ScrollController scrollController) {
-                  return SingleChildScrollView(
-                    controller: scrollController,
-                    child: Container(
-                      height: MediaQuery.of(context).size.height*0.6,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(25.0), topRight: Radius.circular(25.0)),
-                      ),
-                      child: Stack(
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.topCenter,
-                            child: Container(
-                              width: 50.0, 
-                              height: 5.0,
-                              margin: EdgeInsets.only(top: 10.0),
-                              decoration: BoxDecoration(
-                                color: Colors.black26,
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
+                return Container(
+                  height: 180.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(25.0), topRight: Radius.circular(25.0)),
+                  ),
+                  child: Stack(
+                    children: <Widget>[
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Container(
+                          width: 50.0, 
+                          height: 5.0,
+                          margin: EdgeInsets.only(top: 10.0),
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 30.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: const [0, 1, 2].map((item) { 
-                                final Emotion emotion = new Emotion(emotion: item, date: DateTime.now());
-                                return GestureDetector(
-                                  onTap: () async  {
-                                    Navigator.pop(context);
-                                    await showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) => CustomDialog(emotion: emotion)
-                                    );
-                                    // state.addEmotion(item);
-                                  },
-                                  child: Image(image: AssetImage(emotion.assetName), height: 110.0)
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: 30.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: const [0, 1, 2].map((item) { 
+                            final Emotion emotion = new Emotion(emotion: item, date: DateTime.now());
+                            return GestureDetector(
+                              onTap: () async  {;
+                                Navigator.pop(context);
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) => CustomDialog(emotion: emotion)
                                 );
-                              }).toList(),
-                            )
-                          ),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(20.0, 160.0, 20.0, 0.0),
-                            child: TextField(
-                              controller: _textEditingController,
-                              maxLines: 5,
-                              style: TextStyle(fontSize: 20.0),
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'メモ',
-                              ),
-                              focusNode: this.focusNode,
-                              onChanged: (value) {
-                                setState(() {
-                                  _text = value;
-                                });
+                                _addEmotion(item);
                               },
-                            )
-                          ),
-                        ],
+                              child: Image(image: AssetImage(emotion.assetName), height: 110.0)
+                            );
+                          }).toList(),
+                        )
                       ),
-                    )
-                  );
-                }
-              );}
+                    ],
+                  ),
+                );
+              }
             ),
             child: const Image(image: AssetImage('assets/normal.png'), height: 80.0),
           ),
@@ -218,26 +194,6 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
-  }
-
-  Widget _normalToolBar() {
-    return Container(
-      decoration: BoxDecoration(
-          border: BorderDirectional(top: BorderSide(color: Colors.black)),
-          color: Colors.grey[200]),
-      height: 50.0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          CupertinoButton(
-            child: Text('完了'),
-            onPressed: () {
-              focusNode.unfocus(); //unfocus()でフォーカスが外れる
-            },
-          )
-        ],
-      ));
   }
 }
 
@@ -411,53 +367,5 @@ class _AnimatedStampState extends State<AnimatedStamp> {
 
   void _closeDialog() {
     Navigator.pop(context);
-  }
-}
-
-class MemoForm extends StatefulWidget {
-  MemoForm({Key key}) : super(key: key);
-
-  @override
-  _MemoFormState createState() => _MemoFormState();
-}
-
-class _MemoFormState extends State<MemoForm> {
-  TextEditingController _controller;
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override 
-  Widget build(BuildContext context) {
-    return Container(
-      height: 300.0,
-      child: TextField(
-        controller: _controller,
-        onSubmitted: (String value) async {
-          await showDialog<void>(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Thanks!'),
-                content: Text ('You typed "$value".'),
-                actions: <Widget>[
-                  FlatButton(
-                    onPressed: () { Navigator.pop(context); },
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      )
-    );
   }
 }

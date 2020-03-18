@@ -19,7 +19,10 @@ class EmotionChart extends StatefulWidget {
 }
 
 class _EmotionChartState extends State<EmotionChart> {
-  var _scrollController = new ScrollController();
+  var _scrollController = new ScrollController(
+    initialScrollOffset: 0.0,
+    keepScrollOffset: true
+  );
   var scrollWidth;
   ui.Image happyImage;
   ui.Image normalImage;
@@ -52,10 +55,10 @@ class _EmotionChartState extends State<EmotionChart> {
   void initState() {
     super.initState();
     init();
-    new Future.delayed(const Duration(milliseconds: 300))
-      .then((value) => _scrollController.animateTo(_scrollController.offset + scrollWidth/1.4,
-        curve: Curves.linear, duration: Duration(milliseconds: 150)
-      ));
+    // new Future.delayed(const Duration(milliseconds: 300))
+    //   .then((value) => _scrollController.animateTo(_scrollController.offset + scrollWidth/1.4,
+    //     curve: Curves.linear, duration: Duration(milliseconds: 150)
+    //   ));
   }
 
   _showDetail(Offset position, List<Emotion> emotions) {
@@ -75,8 +78,7 @@ class _EmotionChartState extends State<EmotionChart> {
   Widget build(BuildContext context) {
     final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
     scrollWidth = max(MediaQuery.of(context).size.width, emotions.length.toDouble() * 80 + 20.0);
-    return emotions.length == 0
-    ? Container(
+    return Container(
       height: MediaQuery.of(context).size.height,
       color: Colors.deepPurpleAccent[100],
       child: SingleChildScrollView(
@@ -85,7 +87,8 @@ class _EmotionChartState extends State<EmotionChart> {
         child: isImageloaded
         ? GestureDetector(
           // onLongPressStart: (details) => _showDetail(details.localPosition, emotions.reversed.toList()),
-          child: CustomPaint(
+          child: emotions.length != 0
+          ? CustomPaint(
             key: _paintKey,
             painter: ChartPainter(
               emotions: emotions.reversed.toList(),
@@ -94,16 +97,14 @@ class _EmotionChartState extends State<EmotionChart> {
               sadImage: sadImage
             ),
             size: Size(scrollWidth, MediaQuery.of(context).size.height)
+          ) :
+          Container(
+            width: MediaQuery.of(context).size.width,
+            child: const Text("データがありません。")
           ),
         )
         : const Center(child: CircularProgressIndicator()),
       ),
-    ) :
-    Container(
-      alignment: Alignment.center,
-      height: MediaQuery.of(context).size.height,
-      color: Colors.deepPurpleAccent[100],
-      child: const Text("データなし")
     );
   }
 

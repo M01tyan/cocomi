@@ -14,25 +14,49 @@ class EmotionCardList extends StatefulWidget {
 }
 
 class _EmotionCardListState extends State<EmotionCardList> {
+  var _text = "";
+  var textFieldController;
+  final ScrollController listViewController = new ScrollController();
+  final FocusNode textFieldNode = new FocusNode();
 
   @override
   void initState() {
     super.initState();
+    textFieldNode.addListener(_onFocus);
     // Admob.initialize("ca-app-pub-4060274085696934/2178993822");
+  }
+
+  @override 
+  void dispose() {
+    textFieldController.dispose();
+    textFieldNode.dispose();
+    super.dispose();
+  }
+
+  _onFocus() {
+    print(listViewController.offset);
+
+    if (textFieldNode.hasFocus) {
+      listViewController.animateTo(110.0, duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+    }
   }
 
   @override 
   Widget build(BuildContext context) {
     final List<Emotion> emotions = Inherited.of(context, listen: true).emotions;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     return Column(
       children: <Widget>[
         Expanded(
           child: emotions.length != 0
           ? ListView.builder(
+              controller: listViewController,
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               itemCount: emotions.length,
               itemBuilder: (BuildContext context, int index) {
+                textFieldController = new TextEditingController(text: emotions[index].memo);
                 return Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 2.0, 20.0, 2.0),
+                  padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 5.0),
                   child: FlipCard(
                     direction: FlipDirection.VERTICAL,
                     front: Container(
@@ -73,6 +97,14 @@ class _EmotionCardListState extends State<EmotionCardList> {
                               height: 90.0,
                               fit: BoxFit.fitHeight                              
                             )
+                          ),
+                          Positioned(
+                            top: 8.0,
+                            right: 15.0,
+                            child: Icon(
+                              Icons.flip_to_back,
+                              size: 30.0,
+                            )
                           )
                         ],
                       )
@@ -90,11 +122,58 @@ class _EmotionCardListState extends State<EmotionCardList> {
                           ],
                         ),
                       ),
-                      child: Text("back")
-                    )
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(15.0, 0.0, 80.0, 0.0),
+                            child: TextField(
+                              controller: textFieldController,
+                              focusNode: textFieldNode,
+                              maxLines: 3,
+                              maxLength: 150,
+                              maxLengthEnforced: true,
+                              textInputAction: TextInputAction.go,
+                              style: TextStyle(fontSize: 15.0),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'メモ',
+                                counterText: "",
+                                hintText: "あなたの今の気持ちをメモしてください。",
+                              ),
+                              onChanged: (value) {
+                                emotions[index].editMemo = value;
+                              },
+                            )
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.flip_to_front,
+                                  size: 30.0,
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete_forever),
+                                  iconSize: 45.0,
+                                  onPressed: () {
+
+                                  },
+                                )
+                              ]
+                            )
+                          )
+                        ]
+                      )
+                    ),
+                    onFlip: () {
+                      FocusScope.of(context).requestFocus(FocusNode());
+                    }
                   )
                 );
-            }
+              }
           ) :
           const Center(
             child: const Text(
@@ -106,13 +185,13 @@ class _EmotionCardListState extends State<EmotionCardList> {
             ),
           )
         ),
-        // SizedBox(
-        //   height: 60,
-        //   child: AdmobBanner(
-        //     adUnitId: "ca-app-pub-4060274085696934/2178993822",
-        //     adSize: AdmobBannerSize.FULL_BANNER,
-        //   )
-        // )
+        SizedBox(
+          height: 60,
+          // child: AdmobBanner(
+          //   adUnitId: "ca-app-pub-4060274085696934/2178993822",
+          //   adSize: AdmobBannerSize.FULL_BANNER,
+          // )
+        )
       ]
     );
   }
