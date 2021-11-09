@@ -1,2 +1,1 @@
 # cocomi
-hogehoge
